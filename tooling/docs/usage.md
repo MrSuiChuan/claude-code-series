@@ -66,8 +66,12 @@ REM 按默认推荐方式直接安装 Claude Code
 tooling\scripts\install_claude_code.cmd install -Yes
 REM 预演通过 npm 更新，不实际执行更新
 tooling\scripts\install_claude_code.cmd update -Method npm -DryRun -Yes
+REM 通过 npm 真实执行更新
+tooling\scripts\install_claude_code.cmd update -Method npm -Yes
 REM 预演通过 npm 卸载，不实际执行卸载
 tooling\scripts\install_claude_code.cmd uninstall -Method npm -DryRun -Yes
+REM 通过 npm 真实执行卸载
+tooling\scripts\install_claude_code.cmd uninstall -Method npm -Yes
 REM 查看当前安装状态和检测到的安装来源
 tooling\scripts\install_claude_code.cmd status
 REM 诊断当前环境并给出后续建议
@@ -80,6 +84,8 @@ REM 生成可分享的环境摘要报告
 tooling\scripts\install_claude_code.cmd report
 REM 预演从 npm 迁移到 native，不实际执行迁移
 tooling\scripts\install_claude_code.cmd migrate -FromMethod npm -Method native -DryRun -Yes
+REM 从 npm 真实迁移到 native
+tooling\scripts\install_claude_code.cmd migrate -FromMethod npm -Method native -Yes
 ```
 
 ### PowerShell
@@ -89,8 +95,12 @@ tooling\scripts\install_claude_code.cmd migrate -FromMethod npm -Method native -
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" install -Yes
 # 预演通过 npm 更新，不实际执行更新
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" update -Method npm -DryRun -Yes
+# 通过 npm 真实执行更新
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" update -Method npm -Yes
 # 预演通过 npm 卸载，不实际执行卸载
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" uninstall -Method npm -DryRun -Yes
+# 通过 npm 真实执行卸载
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" uninstall -Method npm -Yes
 # 查看当前安装状态和检测到的安装来源
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" status
 # 诊断当前环境并给出后续建议
@@ -101,6 +111,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_c
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" report
 # 预演从 npm 迁移到 native，不实际执行迁移
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" migrate -FromMethod npm -Method native -DryRun -Yes
+# 从 npm 真实迁移到 native
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" migrate -FromMethod npm -Method native -Yes
 ```
 
 ## shell
@@ -110,8 +122,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_c
 bash ./tooling/scripts/install_claude_code.sh install --yes
 # 预演通过 npm 更新，不实际执行更新
 bash ./tooling/scripts/install_claude_code.sh update --method npm --dry-run --yes
+# 通过 npm 真实执行更新
+bash ./tooling/scripts/install_claude_code.sh update --method npm --yes
 # 预演通过 npm 卸载，不实际执行卸载
 bash ./tooling/scripts/install_claude_code.sh uninstall --method npm --dry-run --yes
+# 通过 npm 真实执行卸载
+bash ./tooling/scripts/install_claude_code.sh uninstall --method npm --yes
 # 查看当前安装状态和检测到的安装来源
 bash ./tooling/scripts/install_claude_code.sh status
 # 诊断当前环境并给出后续建议
@@ -122,6 +138,8 @@ bash ./tooling/scripts/install_claude_code.sh doctor --fix --dry-run
 bash ./tooling/scripts/install_claude_code.sh self-test --json
 # 预演从 npm 迁移到 native，不实际执行迁移
 bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --dry-run --yes
+# 从 npm 真实迁移到 native
+bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --yes
 ```
 
 ## 推荐顺序
@@ -133,9 +151,12 @@ bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native
 3. `tooling\scripts\install_claude_code.cmd self-test`：跑一遍内置自检，确认脚本主流程正常。
 4. `tooling\scripts\install_claude_code.cmd report`：生成一份适合分享或留档的环境摘要。
 5. `tooling\scripts\install_claude_code.cmd install -Yes`：确认环境没问题后，按默认推荐方式直接安装。
-6. `tooling\scripts\install_claude_code.cmd update -Method npm -DryRun -Yes`：先预演通过 npm 更新，避免直接改动。
-7. `tooling\scripts\install_claude_code.cmd uninstall -Method npm -DryRun -Yes`：先预演通过 npm 卸载，确认删的是对的安装来源。
-8. `tooling\scripts\install_claude_code.cmd migrate -FromMethod npm -Method native -DryRun -Yes`：先预演从 npm 迁移到 native，确认迁移步骤正确。
+6. `tooling\scripts\install_claude_code.cmd update -Method npm -DryRun -Yes`：先预演通过 npm 更新，确认更新目标正确。
+7. `tooling\scripts\install_claude_code.cmd update -Method npm -Yes`：确认预演没问题后，真实执行更新。
+8. `tooling\scripts\install_claude_code.cmd uninstall -Method npm -DryRun -Yes`：先预演通过 npm 卸载，确认删的是对的安装来源。
+9. `tooling\scripts\install_claude_code.cmd uninstall -Method npm -Yes`：确认预演没问题后，真实执行卸载。
+10. `tooling\scripts\install_claude_code.cmd migrate -FromMethod npm -Method native -DryRun -Yes`：先预演从 npm 迁移到 native，确认迁移步骤正确。
+11. `tooling\scripts\install_claude_code.cmd migrate -FromMethod npm -Method native -Yes`：确认预演没问题后，真实执行迁移。
 
 ### PowerShell
 
@@ -144,9 +165,12 @@ bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native
 3. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" self-test -Json`：跑一遍内置自检，并保留结构化输出。
 4. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" report`：生成一份适合分享或留档的环境摘要。
 5. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" install -Yes`：确认环境没问题后，按默认推荐方式直接安装。
-6. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" update -Method npm -DryRun -Yes`：先预演通过 npm 更新，避免直接改动。
-7. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" uninstall -Method npm -DryRun -Yes`：先预演通过 npm 卸载，确认删的是对的安装来源。
-8. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" migrate -FromMethod npm -Method native -DryRun -Yes`：先预演从 npm 迁移到 native，确认迁移步骤正确。
+6. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" update -Method npm -DryRun -Yes`：先预演通过 npm 更新，确认更新目标正确。
+7. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" update -Method npm -Yes`：确认预演没问题后，真实执行更新。
+8. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" uninstall -Method npm -DryRun -Yes`：先预演通过 npm 卸载，确认删的是对的安装来源。
+9. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" uninstall -Method npm -Yes`：确认预演没问题后，真实执行卸载。
+10. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" migrate -FromMethod npm -Method native -DryRun -Yes`：先预演从 npm 迁移到 native，确认迁移步骤正确。
+11. `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" migrate -FromMethod npm -Method native -Yes`：确认预演没问题后，真实执行迁移。
 
 ### shell
 
@@ -154,12 +178,16 @@ bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native
 2. `bash ./tooling/scripts/install_claude_code.sh doctor --fix --dry-run`：先预演低风险修复，确认脚本准备怎么修。
 3. `bash ./tooling/scripts/install_claude_code.sh self-test --json`：跑一遍内置自检，并保留结构化输出。
 4. `bash ./tooling/scripts/install_claude_code.sh install --yes`：确认环境没问题后，按默认推荐方式直接安装。
-5. `bash ./tooling/scripts/install_claude_code.sh update --method npm --dry-run --yes`：先预演通过 npm 更新，避免直接改动。
-6. `bash ./tooling/scripts/install_claude_code.sh uninstall --method npm --dry-run --yes`：先预演通过 npm 卸载，确认删的是对的安装来源。
-7. `bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --dry-run --yes`：先预演从 npm 迁移到 native，确认迁移步骤正确。
+5. `bash ./tooling/scripts/install_claude_code.sh update --method npm --dry-run --yes`：先预演通过 npm 更新，确认更新目标正确。
+6. `bash ./tooling/scripts/install_claude_code.sh update --method npm --yes`：确认预演没问题后，真实执行更新。
+7. `bash ./tooling/scripts/install_claude_code.sh uninstall --method npm --dry-run --yes`：先预演通过 npm 卸载，确认删的是对的安装来源。
+8. `bash ./tooling/scripts/install_claude_code.sh uninstall --method npm --yes`：确认预演没问题后，真实执行卸载。
+9. `bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --dry-run --yes`：先预演从 npm 迁移到 native，确认迁移步骤正确。
+10. `bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --yes`：确认预演没问题后，真实执行迁移。
 
 ## 高风险动作说明
 
 - `tooling\scripts\install_claude_code.cmd doctor -Fix`、`powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" doctor -Fix` 和 `bash ./tooling/scripts/install_claude_code.sh doctor --fix` 都不会自动执行安装来源迁移
 - 多来源安装只会给出建议，不会直接删改
 - 如果你机器上已有旧的 npm 安装，优先先看 `tooling\scripts\install_claude_code.cmd migrate -FromMethod npm -Method native -DryRun -Yes`、`powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" migrate -FromMethod npm -Method native -DryRun -Yes` 或 `bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --dry-run --yes`
+- 真实执行更新、卸载、迁移前，建议先跑同一条命令的预演版本，确认输出结果没问题再去掉 `-DryRun` 或 `--dry-run`
