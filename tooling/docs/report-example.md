@@ -1,6 +1,16 @@
 # Report Example
 
-下面是 `report` 的典型输出结构。
+`report` 目前只在 `Windows CMD` 和 `Windows PowerShell` 入口提供，不在 `macOS Terminal`、`Linux Terminal`、`WSL Terminal` 入口提供。
+
+## 适用环境
+
+- `Windows CMD`
+  `tooling\scripts\install_claude_code.cmd report`
+
+- `Windows PowerShell`
+  `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" report`
+
+## 典型输出
 
 ```markdown
 # Claude Code 环境报告
@@ -19,7 +29,7 @@
 - 可用：npm
 - 已检测到：npm
 
-## Claude Paths
+## Claude 路径
 - `C:\Users\example\AppData\Roaming\npm\claude`
 
 ## 建议
@@ -34,4 +44,4 @@
 - 卸载计划预演检查：通过
 ```
 
-如果你要把这份输出贴到 README、Issue、文章或内部文档里，建议优先用 Markdown 版本。
+如果你要把这份输出贴到 README、Issue、文章或内部文档里，优先使用 Markdown 版本会更方便整理。
