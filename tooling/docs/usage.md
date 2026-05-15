@@ -303,6 +303,29 @@ bash install_claude_code.sh migrate --from npm --method native --yes
 
 当前 `WSL Terminal` 入口不支持 `report`。如果 `WSL Terminal` 里检测到的是 Windows 版本的 `claude`，请改用 `Windows CMD` 或 `Windows PowerShell` 命令管理它，不要在 WSL 里直接卸载或迁移 Windows 安装。
 
+### WSL 里怎么区分 Windows 安装和 WSL 安装
+
+- 如果 `bash install_claude_code.sh status` 或 `bash install_claude_code.sh doctor` 输出的 `Claude 路径` 类似：
+  `/mnt/c/Users/你的用户名/AppData/Roaming/npm/claude`
+  这说明当前检测到的是 Windows 安装，只是被 WSL 的 PATH 看见了。
+
+- 如果 `Claude 路径` 是 WSL 自己的 Linux 路径，例如：
+  `/usr/bin/claude`
+  `/usr/local/bin/claude`
+  `/home/你的用户名/.local/bin/claude`
+  这说明当前检测到的是 WSL 内部安装。
+
+- 如果你要管理 Windows 安装：
+  回到 `Windows PowerShell` 或 `Windows CMD`，执行 Windows 对应命令，不要在 WSL 里直接做 `update --method apt`、`uninstall --method apt`、`migrate --from apt` 这类操作。
+
+- 如果你要管理 WSL 安装：
+  先在 WSL 里做安装预演，再决定是否真实安装：
+  `bash install_claude_code.sh install --method apt --dry-run --yes`
+  `bash install_claude_code.sh install --method native --dry-run --yes`
+
+- 如果你只是想先确认当前到底是哪一种：
+  先执行 `bash install_claude_code.sh doctor`
+
 ## 推荐顺序
 
 ### Windows CMD
