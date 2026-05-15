@@ -1,0 +1,5 @@
+articles/
+/scripts/
+CLAUDE.md
+*.log
+*.tmp
