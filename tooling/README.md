@@ -30,6 +30,100 @@
 - `self-test`
 - `report`
 
+## 命令枚举值
+
+### PowerShell / CMD 动作枚举
+
+- `install`
+- `update`
+- `uninstall`
+- `status`
+- `doctor`
+- `migrate`
+- `self-test`
+- `report`
+
+### PowerShell / CMD `-Method` 枚举
+
+- `auto`
+- `native`
+- `winget`
+- `homebrew`
+- `npm`
+
+### PowerShell / CMD `-FromMethod` 枚举
+
+- `auto`
+- `native`
+- `winget`
+- `homebrew`
+- `npm`
+
+### shell 动作枚举
+
+- `install`
+- `update`
+- `uninstall`
+- `status`
+- `doctor`
+- `migrate`
+- `self-test`
+
+### shell `--method` 枚举
+
+- `auto`
+- `native`
+- `homebrew`
+- `npm`
+- `apt`
+- `dnf`
+- `apk`
+
+### shell `--from` 枚举
+
+- `auto`
+- `native`
+- `homebrew`
+- `npm`
+- `apt`
+- `dnf`
+- `apk`
+
+### 通用目标版本枚举
+
+- `stable`
+- `latest`
+- `VERSION`
+
+其中 `VERSION` 表示明确的版本号，例如 `2.1.63`。
+
+### PowerShell / CMD 开关参数
+
+- `-Force`
+- `-Yes`
+- `-DryRun`
+- `-SkipVerify`
+- `-Json`
+- `-Fix`
+- `-Status`
+
+### shell 开关参数
+
+- `--force`
+- `--yes`
+- `--dry-run`
+- `--skip-verify`
+- `--json`
+- `--fix`
+- `--status`
+
+## 入口差异
+
+- `report` 目前是 PowerShell / CMD 入口提供的动作。
+- shell 入口当前不包含 `report` 动作，文档中的 shell 示例只覆盖它已经实现的动作。
+- `homebrew` 只在 macOS 场景下有意义，`winget` 只在 Windows 场景下有意义。
+- `apt`、`dnf`、`apk` 只在对应 Linux 发行版下有意义。
+
 ## 推荐命令
 
 ### Windows

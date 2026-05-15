@@ -1,5 +1,62 @@
 # Usage
 
+## 完整枚举值
+
+### PowerShell / CMD 动作枚举
+
+- `install`
+- `update`
+- `uninstall`
+- `status`
+- `doctor`
+- `migrate`
+- `self-test`
+- `report`
+
+### PowerShell / CMD 参数枚举
+
+- `-Method`: `auto` `native` `winget` `homebrew` `npm`
+- `-FromMethod`: `auto` `native` `winget` `homebrew` `npm`
+- `-Target`: `stable` `latest` `VERSION`
+- `-Force`
+- `-Yes`
+- `-DryRun`
+- `-SkipVerify`
+- `-Json`
+- `-Fix`
+- `-Status`
+
+### shell 动作枚举
+
+- `install`
+- `update`
+- `uninstall`
+- `status`
+- `doctor`
+- `migrate`
+- `self-test`
+
+### shell 参数枚举
+
+- `--method`: `auto` `native` `homebrew` `npm` `apt` `dnf` `apk`
+- `--from`: `auto` `native` `homebrew` `npm` `apt` `dnf` `apk`
+- `--target`: `stable` `latest` `VERSION`
+- `--force`
+- `--yes`
+- `--dry-run`
+- `--skip-verify`
+- `--json`
+- `--fix`
+- `--status`
+
+### 补充说明
+
+- `VERSION` 表示具体版本号，例如 `2.1.63`。
+- `homebrew` 只适用于 macOS。
+- `winget` 只适用于 Windows。
+- `apt`、`dnf`、`apk` 只适用于对应的 Linux 发行版。
+- shell 入口当前不包含 `report` 动作。
+
 ## Windows
 
 ### CMD
@@ -38,7 +95,7 @@ bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native
 1. `doctor`
 2. `doctor fix --dry-run`
 3. `self-test`
-4. `report`
+4. 如需环境摘要，使用 PowerShell / CMD 执行 `report`
 5. 需要时再执行真实的 `install / update / uninstall / migrate`
 
 ## 高风险动作说明
