@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Position = 0)]
     [ValidateSet("install", "update", "uninstall", "status", "doctor", "migrate", "self-test", "report")]
     [string]$Action = "install",
@@ -30,7 +30,103 @@ if ($Status) {
 }
 
 if ($Target -notmatch '^(stable|latest|\d+\.\d+\.\d+(\S+)?)$') {
-    throw "Unsupported target: $Target. Use stable, latest, or a version such as 2.1.89."
+    throw "不支持的目标版本：$Target。请使用 stable、latest，或类似 2.1.89 的具体版本号。"
+}
+
+function Get-ActionDisplayName {
+    param([string]$Name)
+
+    switch ($Name) {
+        "install" { return "安装" }
+        "update" { return "更新" }
+        "uninstall" { return "卸载" }
+        "status" { return "状态检查" }
+        "doctor" { return "环境诊断" }
+        "migrate" { return "安装来源迁移" }
+        "self-test" { return "脚本自检" }
+        "report" { return "环境报告" }
+        default { return $Name }
+    }
+}
+
+function Get-DoctorSummaryDisplayName {
+    param([string]$Summary)
+
+    switch ($Summary) {
+        "healthy" { return "正常" }
+        "warning" { return "需要关注" }
+        "not_installed" { return "未安装" }
+        default { return $Summary }
+    }
+}
+
+function Get-SelfTestCheckDisplayName {
+    param([string]$Name)
+
+    switch ($Name) {
+        "status-state" { return "状态信息检查" }
+        "doctor-state" { return "环境诊断检查" }
+        "doctor-fix-dryrun" { return "诊断修复预演检查" }
+        "update-dryrun-plan" { return "更新计划预演检查" }
+        "uninstall-dryrun-plan" { return "卸载计划预演检查" }
+        "install-dryrun-plan" { return "安装计划预演检查" }
+        "plan-generation" { return "执行计划生成检查" }
+        default { return $Name }
+    }
+}
+
+function Get-ProgressActivityText {
+    param([string]$ActionName)
+
+    return "Claude Code $(Get-ActionDisplayName -Name $ActionName)"
+}
+
+function Write-UiInfo {
+    param([string]$Message)
+
+    if (-not $Json) {
+        Write-Host $Message
+    }
+}
+
+function Write-UiWarning {
+    param([string]$Message)
+
+    if (-not $Json) {
+        Write-Host "警告：$Message" -ForegroundColor Yellow
+    }
+}
+
+function Write-UiSuccess {
+    param([string]$Message)
+
+    if (-not $Json) {
+        Write-Host $Message -ForegroundColor Green
+    }
+}
+
+function Write-UiProgress {
+    param(
+        [string]$ActionName,
+        [string]$Status,
+        [int]$Percent
+    )
+
+    if ($Json) {
+        return
+    }
+
+    Write-Progress -Id 1 -Activity (Get-ProgressActivityText -ActionName $ActionName) -Status $Status -PercentComplete $Percent
+}
+
+function Complete-UiProgress {
+    param([string]$ActionName)
+
+    if ($Json) {
+        return
+    }
+
+    Write-Progress -Id 1 -Activity (Get-ProgressActivityText -ActionName $ActionName) -Completed
 }
 
 function Get-NormalizedArchitecture {
@@ -90,7 +186,7 @@ function Get-RuntimeInfo {
         }
     }
 
-    throw "Unsupported system"
+    throw "暂不支持当前系统。"
 }
 
 function Get-HomeDirectory {
@@ -102,7 +198,7 @@ function Get-HomeDirectory {
         return $env:HOME
     }
 
-    throw "Unable to determine the current user's home directory"
+    throw "无法确定当前用户的主目录。"
 }
 
 function Test-CommandExists {
@@ -215,7 +311,7 @@ function Get-SupportedMethods {
         "wsl" { return @("native", "npm") }
     }
 
-    throw "Unsupported system"
+    throw "暂不支持当前系统。"
 }
 
 function Get-AvailableInstallMethods {
@@ -356,7 +452,7 @@ function Resolve-Method {
 
     if ($supported[$Runtime.System] -notcontains $RequestedMethod) {
         $available = ($supported[$Runtime.System] | Where-Object { $_ -ne "auto" }) -join " / "
-        throw "$($Runtime.System) does not support method $RequestedMethod. Available methods: $available"
+        throw "$($Runtime.System) 暂不支持安装方式 $RequestedMethod。可用安装方式：$available"
     }
 
     if ($RequestedMethod -ne "auto") {
@@ -376,7 +472,7 @@ function Resolve-Method {
             return $availableInstallMethods[0]
         }
 
-        throw "Unable to choose an install method automatically. Install missing prerequisites or pass -Method explicitly."
+    throw "无法自动选择安装方式。请先安装缺失的依赖，或显式传入 -Method。"
     }
 
     $detectedMethods = @($State.DetectedMethods)
@@ -386,10 +482,10 @@ function Resolve-Method {
     }
 
     if ($detectedMethods.Count -gt 1) {
-        throw "Multiple install methods were detected ($($detectedMethods -join ', ')). Re-run with -Method to choose the one you want to manage."
+        throw "检测到多个安装来源（$($detectedMethods -join ', ')）。请重新执行并通过 -Method 指定要管理的安装方式。"
     }
 
-    throw "No supported Claude Code installation was detected. Re-run with install or pass -Method explicitly."
+    throw "未检测到受支持的 Claude Code 安装。请执行 install，或显式传入 -Method。"
 }
 
 function Test-MethodInstalled {
@@ -415,12 +511,12 @@ function Confirm-OrExit {
     }
 
     if (-not [Environment]::UserInteractive) {
-        throw "Non-interactive environment detected. Re-run with -Yes to continue."
+        throw "检测到当前环境为非交互模式。请重新执行并带上 -Yes。"
     }
 
     $answer = Read-Host "$PromptText [y/N]"
     if ($answer.ToLowerInvariant() -notin @("y", "yes")) {
-        throw "Operation cancelled"
+        throw "操作已取消。"
     }
 }
 
@@ -433,7 +529,7 @@ function Get-CurlOrWgetCommand {
         return "wget"
     }
 
-    throw "Missing required command: curl or wget"
+    throw "缺少必要命令：curl 或 wget。"
 }
 
 function Get-NativeInstallPlan {
@@ -445,7 +541,7 @@ function Get-NativeInstallPlan {
     if ($Runtime.System -eq "windows") {
         if ($InstallTarget -eq "latest") {
             return @{
-                Note = "Run the official native installer"
+                Note = "执行官方 native 安装脚本"
                 DisplayCommand = "irm https://claude.ai/install.ps1 | iex"
                 Runner = {
                     irm https://claude.ai/install.ps1 | iex
@@ -454,7 +550,7 @@ function Get-NativeInstallPlan {
         }
 
         return @{
-            Note = "Run the official native installer with a pinned target"
+            Note = "执行指定版本的官方 native 安装脚本"
             DisplayCommand = "& ([scriptblock]::Create((irm https://claude.ai/install.ps1))) $InstallTarget"
             Runner = {
                 & ([scriptblock]::Create((irm https://claude.ai/install.ps1))) $InstallTarget
@@ -463,7 +559,7 @@ function Get-NativeInstallPlan {
     }
 
     if (-not (Test-CommandExists "bash")) {
-        throw "Missing required command: bash"
+        throw "缺少必要命令：bash。"
     }
 
     $downloader = Get-CurlOrWgetCommand
@@ -479,7 +575,7 @@ function Get-NativeInstallPlan {
     }
 
     return @{
-        Note = "Run the official native installer"
+        Note = "执行官方 native 安装脚本"
         DisplayCommand = $displayCommand
         Runner = {
             & bash -lc $displayCommand
@@ -497,7 +593,7 @@ function Get-NativeUpdatePlan {
 
     if ($UpdateTarget -eq "latest") {
         return @{
-            Note = "Update the native installation"
+            Note = "更新 native 安装"
             DisplayCommand = "$runnerPath update"
             Runner = {
                 & $runnerPath update
@@ -506,7 +602,7 @@ function Get-NativeUpdatePlan {
     }
 
     return @{
-        Note = "Switch the native installation to a target release"
+        Note = "把 native 安装切换到指定版本"
         DisplayCommand = "$runnerPath install $UpdateTarget"
         Runner = {
             & $runnerPath install $UpdateTarget
@@ -518,7 +614,7 @@ function Get-NativeUninstallPlan {
     param([hashtable]$State)
 
     return @{
-        Note = "Remove the native binary and version files"
+        Note = "删除 native 二进制和版本文件"
         DisplayCommand = "Remove-Item -Path `"$($State.NativePath)`" -Force; Remove-Item -Path `"$($State.NativeSharePath)`" -Recurse -Force"
         Runner = {
             if (Test-Path $State.NativePath) {
@@ -538,38 +634,38 @@ function Get-WingetPlan {
     )
 
     if ($SelectedTarget -ne "latest") {
-        throw "WinGet in this wrapper supports the default package stream only. Use -Target latest."
+        throw "当前封装里的 WinGet 仅支持默认发布流。请使用 -Target latest。"
     }
 
     if (-not (Test-CommandExists "winget")) {
-        throw "Missing required command: winget"
+        throw "缺少必要命令：winget。"
     }
 
     switch ($CurrentAction) {
         "install" {
             return @{
-                Note = "Install Claude Code with WinGet"
+                Note = "使用 WinGet 安装 Claude Code"
                 DisplayCommand = "winget install Anthropic.ClaudeCode"
                 Runner = { & winget install Anthropic.ClaudeCode }
             }
         }
         "update" {
             return @{
-                Note = "Update Claude Code with WinGet"
+                Note = "使用 WinGet 更新 Claude Code"
                 DisplayCommand = "winget upgrade Anthropic.ClaudeCode"
                 Runner = { & winget upgrade Anthropic.ClaudeCode }
             }
         }
         "uninstall" {
             return @{
-                Note = "Remove Claude Code with WinGet"
+                Note = "使用 WinGet 卸载 Claude Code"
                 DisplayCommand = "winget uninstall Anthropic.ClaudeCode"
                 Runner = { & winget uninstall Anthropic.ClaudeCode }
             }
         }
     }
 
-    throw "Unsupported action for WinGet: $CurrentAction"
+    throw "WinGet 不支持当前动作：$CurrentAction"
 }
 
 function Get-HomebrewCaskForTarget {
@@ -590,7 +686,7 @@ function Get-HomebrewCaskForTarget {
         return "claude-code@latest"
     }
 
-    throw "Homebrew in this wrapper supports stable or latest only."
+    throw "当前封装里的 Homebrew 仅支持 stable 或 latest。"
 }
 
 function Get-HomebrewPlan {
@@ -601,7 +697,7 @@ function Get-HomebrewPlan {
     )
 
     if (-not (Test-CommandExists "brew")) {
-        throw "Missing required command: brew"
+        throw "缺少必要命令：brew。"
     }
 
     $caskName = Get-HomebrewCaskForTarget -State $State -SelectedTarget $SelectedTarget
@@ -609,7 +705,7 @@ function Get-HomebrewPlan {
     switch ($CurrentAction) {
         "install" {
             return @{
-                Note = "Install Claude Code with Homebrew"
+                Note = "使用 Homebrew 安装 Claude Code"
                 DisplayCommand = "brew install --cask $caskName"
                 Runner = {
                     & brew install --cask $caskName
@@ -618,7 +714,7 @@ function Get-HomebrewPlan {
         }
         "update" {
             return @{
-                Note = "Update Claude Code with Homebrew"
+                Note = "使用 Homebrew 更新 Claude Code"
                 DisplayCommand = "brew upgrade $caskName"
                 Runner = {
                     & brew upgrade $caskName
@@ -627,7 +723,7 @@ function Get-HomebrewPlan {
         }
         "uninstall" {
             return @{
-                Note = "Remove Claude Code with Homebrew"
+                Note = "使用 Homebrew 卸载 Claude Code"
                 DisplayCommand = "brew uninstall --cask $caskName"
                 Runner = {
                     & brew uninstall --cask $caskName
@@ -636,7 +732,7 @@ function Get-HomebrewPlan {
         }
     }
 
-    throw "Unsupported action for Homebrew: $CurrentAction"
+    throw "Homebrew 不支持当前动作：$CurrentAction"
 }
 
 function Get-NpmPlan {
@@ -646,18 +742,18 @@ function Get-NpmPlan {
     )
 
     if (-not (Test-CommandExists "npm")) {
-        throw "Missing required command: npm"
+        throw "缺少必要命令：npm。"
     }
 
     if ($SelectedTarget -eq "stable") {
-        throw "npm in this wrapper supports latest or a specific version, not stable."
+        throw "当前封装里的 npm 支持 latest 或具体版本号，不支持 stable。"
     }
 
     switch ($CurrentAction) {
         "install" {
             $packageSpec = if ($SelectedTarget -eq "latest") { "@anthropic-ai/claude-code" } else { "@anthropic-ai/claude-code@$SelectedTarget" }
             return @{
-                Note = "Install Claude Code with npm"
+                Note = "使用 npm 安装 Claude Code"
                 DisplayCommand = "npm install -g $packageSpec"
                 Runner = {
                     & npm install -g $packageSpec
@@ -667,7 +763,7 @@ function Get-NpmPlan {
         "update" {
             $packageSpec = if ($SelectedTarget -eq "latest") { "@anthropic-ai/claude-code@latest" } else { "@anthropic-ai/claude-code@$SelectedTarget" }
             return @{
-                Note = "Update Claude Code with npm"
+                Note = "使用 npm 更新 Claude Code"
                 DisplayCommand = "npm install -g $packageSpec"
                 Runner = {
                     & npm install -g $packageSpec
@@ -676,7 +772,7 @@ function Get-NpmPlan {
         }
         "uninstall" {
             return @{
-                Note = "Remove Claude Code with npm"
+                Note = "使用 npm 卸载 Claude Code"
                 DisplayCommand = "npm uninstall -g @anthropic-ai/claude-code"
                 Runner = {
                     & npm uninstall -g @anthropic-ai/claude-code
@@ -685,7 +781,7 @@ function Get-NpmPlan {
         }
     }
 
-    throw "Unsupported action for npm: $CurrentAction"
+    throw "npm 不支持当前动作：$CurrentAction"
 }
 
 function Get-ActionPlan {
@@ -715,7 +811,7 @@ function Get-ActionPlan {
         }
     }
 
-    throw "Unable to build an action plan for method $ResolvedMethod"
+    throw "无法为安装方式 $ResolvedMethod 生成执行计划。"
 }
 
 function New-StatusObject {
@@ -762,36 +858,36 @@ function Show-Status {
         return
     }
 
-    Write-Host "Action: $Action"
-    Write-Host "Detected system: $($Runtime.System)"
-    Write-Host "Detected architecture: $($Runtime.Architecture)"
-    Write-Host "Requested method: $Method"
-    Write-Host "Resolved method: $ResolvedMethod"
-    Write-Host "Target: $Target"
+    Write-UiInfo "当前动作：$(Get-ActionDisplayName -Name $Action)"
+    Write-UiInfo "检测到的系统：$($Runtime.System)"
+    Write-UiInfo "检测到的架构：$($Runtime.Architecture)"
+    Write-UiInfo "请求的安装方式：$Method"
+    Write-UiInfo "最终使用的安装方式：$ResolvedMethod"
+    Write-UiInfo "目标版本：$Target"
 
     if ($State.DetectedMethods.Count -gt 0) {
-        Write-Host "Detected install methods: $($State.DetectedMethods -join ', ')"
+        Write-UiInfo "检测到的安装来源：$($State.DetectedMethods -join ', ')"
     } else {
-        Write-Host "Detected install methods: none"
+        Write-UiInfo "检测到的安装来源：无"
     }
 
     if ($State.ClaudePaths.Count -gt 0) {
-        Write-Host "Claude paths:"
+        Write-UiInfo "检测到的 Claude 路径："
         foreach ($path in $State.ClaudePaths) {
-            Write-Host "  $path"
+            Write-UiInfo "  $path"
         }
     } else {
-        Write-Host "Claude paths: none"
+        Write-UiInfo "检测到的 Claude 路径：无"
     }
 
     if ($Plan) {
-        Write-Host "Planned command: $($Plan.DisplayCommand)"
+        Write-UiInfo "计划执行命令：$($Plan.DisplayCommand)"
     }
 
     if ($State.Warnings.Count -gt 0) {
-        Write-Host "Warnings:"
+        Write-UiWarning "以下项目需要关注："
         foreach ($warning in $State.Warnings) {
-            Write-Host "  - $warning"
+            Write-UiWarning "  - $warning"
         }
     }
 }
@@ -823,19 +919,19 @@ function Verify-Install {
         }
     }
 
-    throw "The install/update finished, but version verification failed. Try opening a new terminal and run claude --version again."
+    throw "安装或更新已经完成，但版本校验失败。请尝试重新打开终端后执行 claude --version。"
 }
 
 function Show-RemainingInstallHint {
     $remainingPaths = Get-ClaudePaths
     if ($remainingPaths.Count -gt 0) {
-        Write-Host "Uninstall finished, but another claude command is still on PATH:"
+        Write-UiInfo "卸载已完成，但 PATH 中仍然存在其他 claude 命令："
         foreach ($path in $remainingPaths) {
-            Write-Host "  $path"
+            Write-UiInfo "  $path"
         }
-        Write-Host "If this is unexpected, remove the extra installation manually."
+        Write-UiWarning "如果这不是你预期的结果，请手动移除多余的安装。"
     } else {
-        Write-Host "Uninstall finished."
+        Write-UiSuccess "卸载已完成。"
     }
 }
 
@@ -927,11 +1023,11 @@ function Get-DoctorRecommendations {
     }
 
     if ($State.LegacyLocalInstalled) {
-        Add-UniqueItem -List $recommendations -Value "Remove stale files under $($State.LegacyLocalPath) after confirming they are not needed."
+        Add-UniqueItem -List $recommendations -Value "确认旧文件不再需要后，删除 $($State.LegacyLocalPath) 下的遗留文件。"
     }
 
     if ($State.ClaudePaths.Count -gt 0) {
-        Add-UniqueItem -List $recommendations -Value "If the Claude CLI starts normally, run claude doctor for a deeper built-in check."
+        Add-UniqueItem -List $recommendations -Value "如果 Claude CLI 可以正常启动，建议继续执行 claude doctor 做更深一步的内建检查。"
     }
 
     return $recommendations.ToArray()
@@ -975,49 +1071,49 @@ function Show-Doctor {
         return
     }
 
-    Write-Host "Doctor summary: $($doctorObject.summary)"
-    Write-Host "Detected system: $($doctorObject.system)"
-    Write-Host "Detected architecture: $($doctorObject.architecture)"
-    Write-Host "Preferred install method: $($doctorObject.preferredInstallMethod)"
+    Write-UiInfo "诊断结论：$(Get-DoctorSummaryDisplayName -Summary $doctorObject.summary)"
+    Write-UiInfo "检测到的系统：$($doctorObject.system)"
+    Write-UiInfo "检测到的架构：$($doctorObject.architecture)"
+    Write-UiInfo "推荐安装方式：$($doctorObject.preferredInstallMethod)"
 
     if ($doctorObject.version) {
-        Write-Host "Detected version: $($doctorObject.version)"
+        Write-UiInfo "检测到的版本：$($doctorObject.version)"
     } else {
-        Write-Host "Detected version: unavailable"
+        Write-UiInfo "检测到的版本：无法获取"
     }
 
     if ($doctorObject.availableInstallMethods.Count -gt 0) {
-        Write-Host "Available install methods: $($doctorObject.availableInstallMethods -join ', ')"
+        Write-UiInfo "当前环境可用的安装方式：$($doctorObject.availableInstallMethods -join ', ')"
     } else {
-        Write-Host "Available install methods: none"
+        Write-UiInfo "当前环境可用的安装方式：无"
     }
 
     if ($doctorObject.detectedMethods.Count -gt 0) {
-        Write-Host "Detected install methods: $($doctorObject.detectedMethods -join ', ')"
+        Write-UiInfo "检测到的安装来源：$($doctorObject.detectedMethods -join ', ')"
     } else {
-        Write-Host "Detected install methods: none"
+        Write-UiInfo "检测到的安装来源：无"
     }
 
     if ($doctorObject.claudePaths.Count -gt 0) {
-        Write-Host "Claude paths:"
+        Write-UiInfo "检测到的 Claude 路径："
         foreach ($path in $doctorObject.claudePaths) {
-            Write-Host "  $path"
+            Write-UiInfo "  $path"
         }
     } else {
-        Write-Host "Claude paths: none"
+        Write-UiInfo "检测到的 Claude 路径：无"
     }
 
     if ($doctorObject.warnings.Count -gt 0) {
-        Write-Host "Warnings:"
+        Write-UiWarning "以下项目需要关注："
         foreach ($warning in $doctorObject.warnings) {
-            Write-Host "  - $warning"
+            Write-UiWarning "  - $warning"
         }
     }
 
     if ($doctorObject.recommendations.Count -gt 0) {
-        Write-Host "Recommended next commands:"
+        Write-UiInfo "建议下一步执行："
         foreach ($recommendation in $doctorObject.recommendations) {
-            Write-Host "  - $recommendation"
+            Write-UiInfo "  - $recommendation"
         }
     }
 }
@@ -1042,7 +1138,7 @@ function Invoke-DoctorFix {
                 detail = "Would remove $legacyPath"
             }) | Out-Null
         } else {
-            Confirm-OrExit -PromptText "Legacy files were detected under $legacyPath. Remove them?"
+            Confirm-OrExit -PromptText "检测到 $legacyPath 下存在遗留文件，是否删除？"
             if (Test-Path $legacyPath) {
                 Remove-Item -LiteralPath $legacyPath -Recurse -Force
             }
@@ -1056,11 +1152,11 @@ function Invoke-DoctorFix {
     }
 
     if ($State.DetectedMethods.Count -gt 1) {
-        $warnings.Add("Multiple install methods are present. Review doctor recommendations and run migrate/uninstall explicitly.") | Out-Null
+        $warnings.Add("检测到多个安装来源。请先查看诊断建议，再明确执行 migrate 或 uninstall。") | Out-Null
     } elseif ($State.DetectedMethods.Count -eq 1 -and $State.DetectedMethods[0] -eq "npm") {
         $availableMethods = @(Get-AvailableInstallMethods -Runtime $Runtime)
         if ($availableMethods -contains "native") {
-            $warnings.Add("npm installation detected. Consider migrating to native with: $(Get-EntryCommand -Runtime $Runtime) migrate -FromMethod npm -Method native -DryRun -Yes") | Out-Null
+            $warnings.Add("检测到 npm 安装，建议通过以下命令迁移到 native：$(Get-EntryCommand -Runtime $Runtime) migrate -FromMethod npm -Method native -DryRun -Yes") | Out-Null
         }
     }
 
@@ -1081,18 +1177,18 @@ function Invoke-DoctorFix {
     }
 
     if ($actions.Count -gt 0) {
-        Write-Host "Doctor fix actions:"
+        Write-UiInfo "诊断修复执行结果："
         foreach ($action in $actions) {
-            Write-Host "  - $($action.detail)"
+            Write-UiInfo "  - $($action.detail)"
         }
     } else {
-        Write-Host "Doctor fix actions: none"
+        Write-UiInfo "诊断修复执行结果：无变更"
     }
 
     if ($warnings.Count -gt 0) {
-        Write-Host "Follow-up recommendations:"
+        Write-UiInfo "后续建议："
         foreach ($warning in $warnings) {
-            Write-Host "  - $warning"
+            Write-UiInfo "  - $warning"
         }
     }
 }
@@ -1106,12 +1202,12 @@ function Resolve-MigrationSourceMethod {
 
     $supportedMethods = @(Get-SupportedMethods -Runtime $Runtime)
     if ($supportedMethods -notcontains $RequestedSourceMethod -and $RequestedSourceMethod -ne "auto") {
-        throw "$($Runtime.System) does not support migration source method $RequestedSourceMethod."
+        throw "$($Runtime.System) 暂不支持迁移来源方式 $RequestedSourceMethod。"
     }
 
     if ($RequestedSourceMethod -ne "auto") {
         if (-not (Test-MethodInstalled -State $State -ResolvedMethod $RequestedSourceMethod)) {
-            throw "No $RequestedSourceMethod installation was detected on this machine."
+            throw "当前机器上未检测到 $RequestedSourceMethod 安装。"
         }
         return $RequestedSourceMethod
     }
@@ -1122,10 +1218,10 @@ function Resolve-MigrationSourceMethod {
     }
 
     if ($detectedMethods.Count -gt 1) {
-        throw "Multiple install methods were detected ($($detectedMethods -join ', ')). Re-run with -FromMethod to choose the source installation."
+        throw "检测到多个安装来源（$($detectedMethods -join ', ')）。请重新执行并通过 -FromMethod 指定迁移来源。"
     }
 
-    throw "No supported Claude Code installation was detected for migration."
+    throw "未检测到可用于迁移的受支持 Claude Code 安装。"
 }
 
 function Resolve-MigrationTargetMethod {
@@ -1140,10 +1236,10 @@ function Resolve-MigrationTargetMethod {
 
     if ($RequestedTargetMethod -ne "auto") {
         if ($supportedMethods -notcontains $RequestedTargetMethod) {
-            throw "$($Runtime.System) does not support migration target method $RequestedTargetMethod."
+            throw "$($Runtime.System) 暂不支持迁移目标方式 $RequestedTargetMethod。"
         }
         if ($RequestedTargetMethod -eq $SourceMethod) {
-            throw "The migration target method is the same as the source method: $SourceMethod."
+            throw "迁移目标方式与来源方式相同：$SourceMethod。"
         }
         return $RequestedTargetMethod
     }
@@ -1158,7 +1254,7 @@ function Resolve-MigrationTargetMethod {
         }
     }
 
-    throw "Unable to choose a migration target automatically. Re-run with -Method to choose the destination installation method."
+    throw "无法自动选择迁移目标。请重新执行并通过 -Method 指定目标安装方式。"
 }
 
 function Get-MigrationPlan {
@@ -1198,11 +1294,11 @@ function Get-MigrationPlan {
             action = "uninstall"
             method = $SourceMethod
             command = $removePlan.DisplayCommand
-            note = "Target method $TargetMethod is already installed, so migration only needs cleanup."
+            note = "目标安装方式 $TargetMethod 已存在，因此本次迁移只需要做清理。"
         }
     }
 
-    $planTitle = "Migrate Claude Code from $SourceMethod to $TargetMethod"
+    $planTitle = "把 Claude Code 从 $SourceMethod 迁移到 $TargetMethod"
     $planCommand = ($steps | ForEach-Object { "$($_.step)) $($_.command)" }) -join "; "
 
     return @{
@@ -1218,12 +1314,12 @@ function Get-MigrationPlan {
             if ($installPlan) {
                 & $installPlan.Runner
                 if ($LASTEXITCODE -ne 0) {
-                    throw "Migration install step failed with exit code: $LASTEXITCODE"
+                    throw "迁移中的安装步骤执行失败，退出码：$LASTEXITCODE"
                 }
 
                 $intermediateState = Get-InstallationState -Runtime $Runtime
                 if (-not (Test-MethodInstalled -State $intermediateState -ResolvedMethod $TargetMethod)) {
-                    throw "Migration stopped because the target method $TargetMethod was not detected after install."
+                    throw "迁移已中止，因为安装完成后没有检测到目标安装方式 $TargetMethod。"
                 }
             }
 
@@ -1254,22 +1350,22 @@ function Show-MigrationPlan {
         return
     }
 
-    Write-Host "Migration source method: $($Plan.SourceMethod)"
-    Write-Host "Migration target method: $($Plan.TargetMethod)"
+    Write-UiInfo "迁移来源方式：$($Plan.SourceMethod)"
+    Write-UiInfo "迁移目标方式：$($Plan.TargetMethod)"
     if ($Plan.TargetAlreadyInstalled) {
-        Write-Host "Target install state: already installed"
+        Write-UiInfo "目标安装状态：已安装"
     } else {
-        Write-Host "Target install state: will be installed"
+        Write-UiInfo "目标安装状态：待安装"
     }
-    Write-Host "Migration steps:"
+    Write-UiInfo "迁移步骤："
     foreach ($step in $Plan.Steps) {
-        Write-Host "  $($step.step). [$($step.method)] $($step.command)"
+        Write-UiInfo "  $($step.step). [$($step.method)] $($step.command)"
     }
 
     if ($State.Warnings.Count -gt 0) {
-        Write-Host "Warnings:"
+        Write-UiWarning "以下项目需要关注："
         foreach ($warning in $State.Warnings) {
-            Write-Host "  - $warning"
+            Write-UiWarning "  - $warning"
         }
     }
 }
@@ -1303,11 +1399,11 @@ function Invoke-SelfTest {
         }
 
         if ($state.DetectedMethods.Count -gt 1) {
-            $fixOutput.warnings += "Multiple install methods are present. Review doctor recommendations and run migrate/uninstall explicitly."
+                $fixOutput.warnings += "检测到多个安装来源。请先查看诊断建议，再明确执行 migrate 或 uninstall。"
         } elseif ($state.DetectedMethods.Count -eq 1 -and $state.DetectedMethods[0] -eq "npm") {
             $availableMethods = @(Get-AvailableInstallMethods -Runtime $Runtime)
             if ($availableMethods -contains "native") {
-                $fixOutput.warnings += "npm installation detected. Consider migrating to native with: $(Get-EntryCommand -Runtime $Runtime) migrate -FromMethod npm -Method native -DryRun -Yes"
+                $fixOutput.warnings += "检测到 npm 安装，建议通过以下命令迁移到 native：$(Get-EntryCommand -Runtime $Runtime) migrate -FromMethod npm -Method native -DryRun -Yes"
             }
         }
 
@@ -1385,9 +1481,9 @@ function Invoke-SelfTest {
         return
     }
 
-    Write-Host "Self-test summary: $(if ($passedBool) { 'passed' } else { 'failed' })"
+    Write-UiInfo "自检结果：$(if ($passedBool) { '通过' } else { '失败' })"
     foreach ($result in $resultArray) {
-        Write-Host "  - $($result.name): $(if ($result.success) { 'ok' } else { 'failed' })"
+        Write-UiInfo "  - $(Get-SelfTestCheckDisplayName -Name $result.name)：$(if ($result.success) { '通过' } else { '失败' })"
     }
     return
 }
@@ -1419,11 +1515,11 @@ function Get-SelfTestData {
         }
 
         if ($state.DetectedMethods.Count -gt 1) {
-            $fixOutput.warnings += "Multiple install methods are present. Review doctor recommendations and run migrate/uninstall explicitly."
+            $fixOutput.warnings += "检测到多个安装来源。请先查看诊断建议，再明确执行 migrate 或 uninstall。"
         } elseif ($state.DetectedMethods.Count -eq 1 -and $state.DetectedMethods[0] -eq "npm") {
             $availableMethods = @(Get-AvailableInstallMethods -Runtime $Runtime)
             if ($availableMethods -contains "native") {
-                $fixOutput.warnings += "npm installation detected. Consider migrating to native with: $(Get-EntryCommand -Runtime $Runtime) migrate -FromMethod npm -Method native -DryRun -Yes"
+                $fixOutput.warnings += "检测到 npm 安装，建议通过以下命令迁移到 native：$(Get-EntryCommand -Runtime $Runtime) migrate -FromMethod npm -Method native -DryRun -Yes"
             }
         }
 
@@ -1525,66 +1621,70 @@ function Show-Report {
     }
 
     $lines = New-Object System.Collections.Generic.List[string]
-    $lines.Add("# Claude Code Environment Report") | Out-Null
+    $lines.Add("# Claude Code 环境报告") | Out-Null
     $lines.Add("") | Out-Null
-    $lines.Add("- Generated: $($reportObject.generatedAt)") | Out-Null
-    $lines.Add("- System: $($reportObject.system)") | Out-Null
-    $lines.Add("- Architecture: $($reportObject.architecture)") | Out-Null
-    $lines.Add("- Version: $(if ($reportObject.version) { $reportObject.version } else { 'unavailable' })") | Out-Null
-    $lines.Add("- Summary: $($reportObject.summary)") | Out-Null
-    $lines.Add("- Preferred install method: $($reportObject.preferredInstallMethod)") | Out-Null
-    $lines.Add("- Self-test: $(if ($reportObject.selfTestPassed) { 'passed' } else { 'failed' })") | Out-Null
+    $lines.Add("- 生成时间：$($reportObject.generatedAt)") | Out-Null
+    $lines.Add("- 系统：$($reportObject.system)") | Out-Null
+    $lines.Add("- 架构：$($reportObject.architecture)") | Out-Null
+    $lines.Add("- 版本：$(if ($reportObject.version) { $reportObject.version } else { '无法获取' })") | Out-Null
+    $lines.Add("- 诊断结论：$(Get-DoctorSummaryDisplayName -Summary $reportObject.summary)") | Out-Null
+    $lines.Add("- 推荐安装方式：$($reportObject.preferredInstallMethod)") | Out-Null
+    $lines.Add("- 自检结果：$(if ($reportObject.selfTestPassed) { '通过' } else { '失败' })") | Out-Null
     $lines.Add("") | Out-Null
 
-    $lines.Add("## Install Methods") | Out-Null
+    $lines.Add("## 安装方式") | Out-Null
     foreach ($method in $reportObject.availableInstallMethods) {
-        $lines.Add("- Available: $method") | Out-Null
+        $lines.Add("- 可用：$method") | Out-Null
     }
     if ($reportObject.detectedMethods.Count -gt 0) {
         foreach ($method in $reportObject.detectedMethods) {
-            $lines.Add("- Detected: $method") | Out-Null
+            $lines.Add("- 已检测到：$method") | Out-Null
         }
     } else {
-        $lines.Add("- Detected: none") | Out-Null
+        $lines.Add("- 已检测到：无") | Out-Null
     }
     $lines.Add("") | Out-Null
 
-    $lines.Add("## Claude Paths") | Out-Null
+    $lines.Add("## Claude 路径") | Out-Null
     if ($reportObject.claudePaths.Count -gt 0) {
         foreach ($path in $reportObject.claudePaths) {
             $lines.Add("- " + '`' + $path + '`') | Out-Null
         }
     } else {
-        $lines.Add("- none") | Out-Null
+        $lines.Add("- 无") | Out-Null
     }
     $lines.Add("") | Out-Null
 
-    $lines.Add("## Recommendations") | Out-Null
+    $lines.Add("## 建议") | Out-Null
     if ($reportObject.recommendations.Count -gt 0) {
         foreach ($recommendation in $reportObject.recommendations) {
             $lines.Add("- $recommendation") | Out-Null
         }
     } else {
-        $lines.Add("- none") | Out-Null
+        $lines.Add("- 无") | Out-Null
     }
     $lines.Add("") | Out-Null
 
-    $lines.Add("## Self-Test Checks") | Out-Null
+    $lines.Add("## 自检项") | Out-Null
     foreach ($check in $reportObject.selfTestChecks) {
-        $lines.Add("- $($check.name): $(if ($check.success) { 'ok' } else { 'failed' })") | Out-Null
-        $lines.Add("  - Output: $($check.output)") | Out-Null
+        $lines.Add("- $(Get-SelfTestCheckDisplayName -Name $check.name)：$(if ($check.success) { '通过' } else { '失败' })") | Out-Null
+        $lines.Add("  - 输出：$($check.output)") | Out-Null
     }
 
     ($lines -join [Environment]::NewLine) | Write-Output
 }
 
 try {
+    Write-UiProgress -ActionName $Action -Status "正在收集运行环境信息" -Percent 5
     $runtime = Get-RuntimeInfo
+    Write-UiProgress -ActionName $Action -Status "正在检测当前安装状态" -Percent 15
     $state = Get-InstallationState -Runtime $runtime
 
     if ($Action -eq "self-test") {
+        Write-UiProgress -ActionName $Action -Status "正在执行脚本自检" -Percent 40
         $script:SelfTestPassed = $false
         Invoke-SelfTest -Runtime $runtime
+        Complete-UiProgress -ActionName $Action
         $selfTestPassed = [bool]$script:SelfTestPassed
         if ($selfTestPassed) {
             exit 0
@@ -1593,61 +1693,74 @@ try {
     }
 
     if ($Action -eq "doctor") {
+        Write-UiProgress -ActionName $Action -Status "正在分析环境并生成诊断结果" -Percent 45
         $resolvedMethod = Resolve-Method -Runtime $runtime -RequestedMethod $Method -CurrentAction $Action -State $state
         Show-Doctor -Runtime $runtime -State $state -ResolvedMethod $resolvedMethod
         if ($Fix) {
+            Write-UiProgress -ActionName $Action -Status "正在执行低风险修复" -Percent 75
             Invoke-DoctorFix -Runtime $runtime -State $state -ResolvedMethod $resolvedMethod
         }
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
     if ($Action -eq "report") {
+        Write-UiProgress -ActionName $Action -Status "正在汇总环境信息并生成报告" -Percent 50
         Show-Report -Runtime $runtime
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
     if ($Action -eq "migrate") {
+        Write-UiProgress -ActionName $Action -Status "正在解析迁移来源和目标" -Percent 30
         $sourceMethod = Resolve-MigrationSourceMethod -Runtime $runtime -State $state -RequestedSourceMethod $FromMethod
         $targetMethod = Resolve-MigrationTargetMethod -Runtime $runtime -RequestedTargetMethod $Method -SourceMethod $sourceMethod
         $migrationPlan = Get-MigrationPlan -Runtime $runtime -State $state -SourceMethod $sourceMethod -TargetMethod $targetMethod
 
+        Write-UiProgress -ActionName $Action -Status "正在生成迁移计划" -Percent 45
         Show-MigrationPlan -Runtime $runtime -State $state -Plan $migrationPlan
 
         if ($DryRun) {
             if (-not $Json) {
-                Write-Host "Dry-run mode enabled. Nothing was executed."
+                Write-UiInfo "当前为预演模式，没有执行任何实际变更。"
             }
+            Complete-UiProgress -ActionName $Action
             exit 0
         }
 
-        Confirm-OrExit -PromptText "Claude Code will be migrated from $sourceMethod to $targetMethod. Continue?"
+        Confirm-OrExit -PromptText "即将把 Claude Code 从 $sourceMethod 迁移到 $targetMethod，是否继续？"
+        Write-UiProgress -ActionName $Action -Status "正在执行迁移步骤" -Percent 70
         & $migrationPlan.Runner
 
         if ($LASTEXITCODE -ne 0) {
-            throw "Migration failed with exit code: $LASTEXITCODE"
+            throw "迁移执行失败，退出码：$LASTEXITCODE"
         }
 
         if ($SkipVerify) {
-            Write-Host "Migration finished. Verification was skipped."
+            Write-UiSuccess "迁移已完成，已按要求跳过校验。"
             Show-RemainingInstallHint
+            Complete-UiProgress -ActionName $Action
             exit 0
         }
 
+        Write-UiProgress -ActionName $Action -Status "正在校验迁移结果" -Percent 90
         $postMigrationState = Get-InstallationState -Runtime $runtime
         if (-not (Test-MethodInstalled -State $postMigrationState -ResolvedMethod $targetMethod)) {
-            throw "Migration finished, but the target method $targetMethod was not detected afterwards."
+            throw "迁移已完成，但后续没有检测到目标安装方式 $targetMethod。"
         }
 
         $version = Get-ClaudeVersionText -State $postMigrationState
         if ($version) {
-            Write-Host "Migration succeeded: $version"
+            Write-UiSuccess "迁移成功，当前版本：$version"
         } else {
-            Write-Host "Migration succeeded."
+            Write-UiSuccess "迁移成功。"
         }
         Show-RemainingInstallHint
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
+    Write-UiProgress -ActionName $Action -Status "正在解析安装方式与执行计划" -Percent 35
     $resolvedMethod = Resolve-Method -Runtime $runtime -RequestedMethod $Method -CurrentAction $Action -State $state
     $plan = $null
 
@@ -1664,18 +1777,20 @@ try {
     Show-Status -Runtime $runtime -State $state -ResolvedMethod $resolvedMethod -Plan $plan
 
     if ($Action -eq "status") {
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
     if ($Action -eq "install" -and (($state.DetectedMethods.Count -gt 0) -or ($state.ClaudePaths.Count -gt 0)) -and -not $Force) {
         if (-not $Json) {
-            Write-Host "Claude Code already appears to be installed. Re-run with -Force to reinstall."
+            Write-UiInfo "Claude Code 看起来已经安装。如需重新安装，请带上 -Force。"
         }
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
     if ($Action -in @("update", "uninstall") -and -not (Test-MethodInstalled -State $state -ResolvedMethod $resolvedMethod)) {
-        throw "No $resolvedMethod installation was detected on this machine."
+        throw "当前机器上未检测到 $resolvedMethod 安装。"
     }
 
     if (-not $plan) {
@@ -1686,46 +1801,53 @@ try {
         exit 0
     }
 
-    Write-Host "Plan note: $($plan.Note)"
-    Write-Host "Plan command: $($plan.DisplayCommand)"
+    Write-UiInfo "执行说明：$($plan.Note)"
+    Write-UiInfo "执行命令：$($plan.DisplayCommand)"
 
     if ($DryRun) {
-        Write-Host "Dry-run mode enabled. Nothing was executed."
+        Write-UiInfo "当前为预演模式，没有执行任何实际变更。"
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
     switch ($Action) {
-        "install" { Confirm-OrExit -PromptText "Claude Code will be installed or reinstalled. Continue?" }
-        "update" { Confirm-OrExit -PromptText "Claude Code will be updated. Continue?" }
-        "uninstall" { Confirm-OrExit -PromptText "Claude Code will be removed. Continue?" }
+        "install" { Confirm-OrExit -PromptText "即将安装或重新安装 Claude Code，是否继续？" }
+        "update" { Confirm-OrExit -PromptText "即将更新 Claude Code，是否继续？" }
+        "uninstall" { Confirm-OrExit -PromptText "即将卸载 Claude Code，是否继续？" }
     }
 
+    Write-UiProgress -ActionName $Action -Status "正在执行计划命令" -Percent 70
     & $plan.Runner
 
     if ($LASTEXITCODE -ne 0) {
-        throw "$Action failed with exit code: $LASTEXITCODE"
+        throw "$(Get-ActionDisplayName -Name $Action)执行失败，退出码：$LASTEXITCODE"
     }
 
     if ($Action -eq "uninstall") {
         Show-RemainingInstallHint
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
     if ($SkipVerify) {
-        Write-Host "$Action finished. Verification was skipped."
+        Write-UiSuccess "$(Get-ActionDisplayName -Name $Action)已完成，已按要求跳过校验。"
+        Complete-UiProgress -ActionName $Action
         exit 0
     }
 
+    Write-UiProgress -ActionName $Action -Status "正在校验执行结果" -Percent 90
     $postState = Get-InstallationState -Runtime $runtime
     $version = Verify-Install -State $postState
     if ($version) {
-        Write-Host "$Action succeeded: $version"
+        Write-UiSuccess "$(Get-ActionDisplayName -Name $Action)成功，当前版本：$version"
     } else {
-        Write-Host "$Action succeeded."
+        Write-UiSuccess "$(Get-ActionDisplayName -Name $Action)成功。"
     }
 
+    Complete-UiProgress -ActionName $Action
     exit 0
 } catch {
+    Complete-UiProgress -ActionName $Action
     if ($env:CLAUDE_CODE_DEBUG -eq "1") {
         Write-Error ($_.Exception | Format-List * -Force | Out-String)
         if ($_.ScriptStackTrace) {

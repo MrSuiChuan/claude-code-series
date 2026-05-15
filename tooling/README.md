@@ -216,6 +216,8 @@ bash ./tooling/scripts/install_claude_code.sh self-test --json
 - Windows CMD 默认推荐先跑 `tooling\scripts\install_claude_code.cmd doctor`
 - PowerShell 默认推荐先跑 `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" doctor`
 - shell 默认推荐先跑 `bash ./tooling/scripts/install_claude_code.sh doctor`
+- 普通终端模式下，脚本会输出中文提示，并在关键阶段显示进度信息
+- `-Json` 或 `--json` 模式下，脚本会保留机器可读输出，不额外插入进度条或普通提示
 - Windows CMD 自动化校验推荐使用 `tooling\scripts\install_claude_code.cmd self-test`
 - PowerShell 自动化校验推荐使用 `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" self-test -Json`
 - shell 自动化校验推荐使用 `bash ./tooling/scripts/install_claude_code.sh self-test --json`

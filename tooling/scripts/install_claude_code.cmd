@@ -5,7 +5,7 @@ set "SCRIPT_DIR=%~dp0"
 set "PS_SCRIPT=%SCRIPT_DIR%install_claude_code.ps1"
 
 if not exist "%PS_SCRIPT%" (
-  echo install_claude_code.ps1 not found: "%PS_SCRIPT%"
+  echo 未找到 install_claude_code.ps1： "%PS_SCRIPT%"
   exit /b 1
 )
 

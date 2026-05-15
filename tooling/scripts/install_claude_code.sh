@@ -13,21 +13,101 @@ JSON=0
 STATUS=0
 FIX=0
 
+get_action_display_name() {
+  case "$1" in
+    install) printf '%s\n' '安装' ;;
+    update) printf '%s\n' '更新' ;;
+    uninstall) printf '%s\n' '卸载' ;;
+    status) printf '%s\n' '状态检查' ;;
+    doctor) printf '%s\n' '环境诊断' ;;
+    migrate) printf '%s\n' '安装来源迁移' ;;
+    self-test) printf '%s\n' '脚本自检' ;;
+    report) printf '%s\n' '环境报告' ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
+get_doctor_summary_display_name() {
+  case "$1" in
+    healthy) printf '%s\n' '正常' ;;
+    warning) printf '%s\n' '需要关注' ;;
+    not_installed) printf '%s\n' '未安装' ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
+get_self_test_check_display_name() {
+  case "$1" in
+    status\ --json|status-state) printf '%s\n' '状态信息检查' ;;
+    doctor\ --json|doctor-state) printf '%s\n' '环境诊断检查' ;;
+    doctor-fix-dryrun) printf '%s\n' '诊断修复预演检查' ;;
+    update*) printf '%s\n' '更新计划预演检查' ;;
+    uninstall*) printf '%s\n' '卸载计划预演检查' ;;
+    install*) printf '%s\n' '安装计划预演检查' ;;
+    plan-generation) printf '%s\n' '执行计划生成检查' ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
+ui_info() {
+  [[ "$JSON" -eq 1 ]] && return 0
+  printf '%s\n' "$1"
+}
+
+ui_warn() {
+  [[ "$JSON" -eq 1 ]] && return 0
+  printf '%s\n' "警告：$1"
+}
+
+ui_success() {
+  [[ "$JSON" -eq 1 ]] && return 0
+  printf '%s\n' "$1"
+}
+
+ui_progress() {
+  local action_name="$1"
+  local status_text="$2"
+  local percent="$3"
+  local width=20
+  local filled=$(( percent * width / 100 ))
+  local empty=$(( width - filled ))
+  local bar_filled="" bar_empty=""
+
+  [[ "$JSON" -eq 1 ]] && return 0
+  if [[ ! -t 1 ]]; then
+    printf '[%s] %s%% %s\n' "$(get_action_display_name "$action_name")" "$percent" "$status_text"
+    return 0
+  fi
+
+  bar_filled="$(printf '%*s' "$filled" '' | tr ' ' '#')"
+  bar_empty="$(printf '%*s' "$empty" '' | tr ' ' '-')"
+  printf '\r[%s] [%s%s] %3s%% %s' "$(get_action_display_name "$action_name")" "$bar_filled" "$bar_empty" "$percent" "$status_text"
+  if [[ "$percent" -ge 100 ]]; then
+    printf '\n'
+  fi
+}
+
+ui_progress_done() {
+  local action_name="$1"
+  [[ "$JSON" -eq 1 ]] && return 0
+  ui_progress "$action_name" '已完成' 100
+}
+
 usage() {
   cat <<'EOF'
-Usage:
+用法：
   ./install_claude_code.sh [install|update|uninstall|status|doctor|migrate|self-test] [options]
 
-Actions:
-  install      Install Claude Code
-  update       Update Claude Code
-  uninstall    Remove Claude Code
-  status       Show detected install state
-  doctor       Diagnose the current install state
-  migrate      Move from one install method to another
-  self-test    Run lightweight built-in checks
+动作：
+  install      安装 Claude Code
+  update       更新 Claude Code
+  uninstall    卸载 Claude Code
+  status       查看当前安装状态
+  doctor       诊断当前安装环境
+  migrate      在不同安装方式之间迁移
+  self-test    运行轻量级内置自检
 
-Options:
+参数：
   --method auto|native|homebrew|npm|apt|dnf|apk
   --from auto|native|homebrew|npm|apt|dnf|apk
   --target stable|latest|VERSION
@@ -98,7 +178,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Error: unsupported argument: $1" >&2
+      echo "错误：不支持的参数：$1" >&2
       usage >&2
       exit 1
       ;;
@@ -110,7 +190,7 @@ if [[ "$STATUS" -eq 1 ]]; then
 fi
 
 if [[ ! "$TARGET" =~ ^(stable|latest|[0-9]+\.[0-9]+\.[0-9]+([^[:space:]]+)?)$ ]]; then
-  echo "Error: unsupported target: $TARGET" >&2
+  echo "错误：不支持的目标版本：$TARGET。请使用 stable、latest，或类似 2.1.89 的具体版本号。" >&2
   exit 1
 fi
 
@@ -162,7 +242,7 @@ command_exists() {
 require_command() {
   local name="$1"
   if ! command_exists "$name"; then
-    echo "Error: missing required command: $name" >&2
+    echo "错误：缺少必要命令：$name" >&2
     exit 1
   fi
 }
@@ -463,11 +543,11 @@ get_doctor_recommendations() {
   fi
 
   if [[ -d "$STATE_LEGACY_LOCAL_PATH" ]]; then
-    printf '%s\n' "Remove stale files under $STATE_LEGACY_LOCAL_PATH after confirming they are not needed."
+    printf '%s\n' "确认旧文件不再需要后，删除 $STATE_LEGACY_LOCAL_PATH 下的遗留文件。"
   fi
 
   if [[ ${#STATE_CLAUDE_PATHS[@]} -gt 0 ]]; then
-    printf '%s\n' 'If the Claude CLI starts normally, run claude doctor for a deeper built-in check.'
+    printf '%s\n' '如果 Claude CLI 可以正常启动，建议继续执行 claude doctor 做更深一步的内建检查。'
   fi
 }
 
@@ -492,7 +572,7 @@ resolve_method() {
   fi
 
   if [[ "$method_is_supported" -ne 1 ]]; then
-    echo "Error: $system does not support method: $requested" >&2
+      echo "错误：$system 暂不支持安装方式：$requested" >&2
     exit 1
   fi
 
@@ -528,11 +608,11 @@ resolve_method() {
   fi
 
   if [[ ${#STATE_DETECTED_METHODS[@]} -gt 1 ]]; then
-    echo "Error: multiple install methods detected (${STATE_DETECTED_METHODS[*]}). Re-run with --method." >&2
+    echo "错误：检测到多个安装来源（${STATE_DETECTED_METHODS[*]}）。请重新执行并通过 --method 指定要管理的安装方式。" >&2
     exit 1
   fi
 
-  echo "Error: no supported Claude Code installation detected" >&2
+  echo "错误：未检测到受支持的 Claude Code 安装。" >&2
   exit 1
 }
 
@@ -618,38 +698,38 @@ print_status() {
     return 0
   fi
 
-  echo "Action: $ACTION"
-  echo "Detected system: $system"
-  echo "Detected architecture: $arch"
-  echo "Requested method: $METHOD"
-  echo "Resolved method: $resolved_method"
-  echo "Target: $TARGET"
+  ui_info "当前动作：$(get_action_display_name "$ACTION")"
+  ui_info "检测到的系统：$system"
+  ui_info "检测到的架构：$arch"
+  ui_info "请求的安装方式：$METHOD"
+  ui_info "最终使用的安装方式：$resolved_method"
+  ui_info "目标版本：$TARGET"
 
   if [[ ${#STATE_DETECTED_METHODS[@]} -gt 0 ]]; then
-    echo "Detected install methods: ${STATE_DETECTED_METHODS[*]}"
+    ui_info "检测到的安装来源：${STATE_DETECTED_METHODS[*]}"
   else
-    echo "Detected install methods: none"
+    ui_info "检测到的安装来源：无"
   fi
 
   if [[ ${#STATE_CLAUDE_PATHS[@]} -gt 0 ]]; then
-    echo "Claude paths:"
+    ui_info "检测到的 Claude 路径："
     local item
     for item in "${STATE_CLAUDE_PATHS[@]}"; do
-      echo "  $item"
+      ui_info "  $item"
     done
   else
-    echo "Claude paths: none"
+    ui_info "检测到的 Claude 路径：无"
   fi
 
   if [[ -n "${PLAN_COMMAND:-}" ]]; then
-    echo "Planned command: $PLAN_COMMAND"
+    ui_info "计划执行命令：$PLAN_COMMAND"
   fi
 
   if [[ ${#STATE_WARNINGS[@]} -gt 0 ]]; then
-    echo "Warnings:"
+    ui_warn "以下项目需要关注："
     local item
     for item in "${STATE_WARNINGS[@]}"; do
-      echo "  - $item"
+      ui_warn "  - $item"
     done
   fi
 }
@@ -723,51 +803,51 @@ print_doctor() {
     return 0
   fi
 
-  echo "Doctor summary: $summary"
-  echo "Detected system: $system"
-  echo "Detected architecture: $arch"
-  echo "Preferred install method: $resolved_method"
+  ui_info "诊断结论：$(get_doctor_summary_display_name "$summary")"
+  ui_info "检测到的系统：$system"
+  ui_info "检测到的架构：$arch"
+  ui_info "推荐安装方式：$resolved_method"
   if [[ -n "$version_output" ]]; then
-    echo "Detected version: $version_output"
+    ui_info "检测到的版本：$version_output"
   else
-    echo "Detected version: unavailable"
+    ui_info "检测到的版本：无法获取"
   fi
 
   if [[ ${#available_methods[@]} -gt 0 ]]; then
-    echo "Available install methods: ${available_methods[*]}"
+    ui_info "当前环境可用的安装方式：${available_methods[*]}"
   else
-    echo "Available install methods: none"
+    ui_info "当前环境可用的安装方式：无"
   fi
 
   if [[ ${#STATE_DETECTED_METHODS[@]} -gt 0 ]]; then
-    echo "Detected install methods: ${STATE_DETECTED_METHODS[*]}"
+    ui_info "检测到的安装来源：${STATE_DETECTED_METHODS[*]}"
   else
-    echo "Detected install methods: none"
+    ui_info "检测到的安装来源：无"
   fi
 
   if [[ ${#STATE_CLAUDE_PATHS[@]} -gt 0 ]]; then
-    echo "Claude paths:"
+    ui_info "检测到的 Claude 路径："
     local item
     for item in "${STATE_CLAUDE_PATHS[@]}"; do
-      echo "  $item"
+      ui_info "  $item"
     done
   else
-    echo "Claude paths: none"
+    ui_info "检测到的 Claude 路径：无"
   fi
 
   if [[ ${#STATE_WARNINGS[@]} -gt 0 ]]; then
-    echo "Warnings:"
+    ui_warn "以下项目需要关注："
     local item
     for item in "${STATE_WARNINGS[@]}"; do
-      echo "  - $item"
+      ui_warn "  - $item"
     done
   fi
 
   if [[ ${#recommendations[@]} -gt 0 ]]; then
-    echo "Recommended next commands:"
+    ui_info "建议下一步执行："
     local item
     for item in "${recommendations[@]}"; do
-      echo "  - $item"
+      ui_info "  - $item"
     done
   fi
 }
@@ -780,23 +860,23 @@ run_doctor_fix() {
 
   if [[ -d "$STATE_LEGACY_LOCAL_PATH" ]]; then
     if [[ "$DRY_RUN" -eq 1 ]]; then
-      actions+=("Would remove $STATE_LEGACY_LOCAL_PATH")
+      actions+=("将删除 $STATE_LEGACY_LOCAL_PATH")
     else
-      confirm_or_exit "Legacy files were detected under $STATE_LEGACY_LOCAL_PATH. Remove them?"
+      confirm_or_exit "检测到 $STATE_LEGACY_LOCAL_PATH 下存在遗留文件，是否删除？"
       rm -rf "$STATE_LEGACY_LOCAL_PATH"
-      actions+=("Removed $STATE_LEGACY_LOCAL_PATH")
+      actions+=("已删除 $STATE_LEGACY_LOCAL_PATH")
     fi
   fi
 
   if [[ ${#STATE_DETECTED_METHODS[@]} -gt 1 ]]; then
-    warnings+=("Multiple install methods are present. Review doctor recommendations and run migrate/uninstall explicitly.")
+    warnings+=("检测到多个安装来源。请先查看诊断建议，再明确执行 migrate 或 uninstall。")
   elif [[ ${#STATE_DETECTED_METHODS[@]} -eq 1 && "${STATE_DETECTED_METHODS[0]}" == "npm" ]]; then
     local available_methods=()
     mapfile -t available_methods < <(get_available_install_methods "$system")
     local candidate
     for candidate in "${available_methods[@]}"; do
       if [[ "$candidate" == "native" ]]; then
-        warnings+=("npm installation detected. Consider migrating to native with: $(get_entry_command) migrate --from npm --method native --dry-run --yes")
+        warnings+=("检测到 npm 安装，建议通过以下命令迁移到 native：$(get_entry_command) migrate --from npm --method native --dry-run --yes")
         break
       fi
     done
@@ -838,20 +918,20 @@ run_doctor_fix() {
   fi
 
   if [[ ${#actions[@]} -gt 0 ]]; then
-    echo "Doctor fix actions:"
+    ui_info "诊断修复执行结果："
     local item
     for item in "${actions[@]}"; do
-      echo "  - $item"
+      ui_info "  - $item"
     done
   else
-    echo "Doctor fix actions: none"
+    ui_info "诊断修复执行结果：无变更"
   fi
 
   if [[ ${#warnings[@]} -gt 0 ]]; then
-    echo "Follow-up recommendations:"
+    ui_info "后续建议："
     local item
     for item in "${warnings[@]}"; do
-      echo "  - $item"
+      ui_info "  - $item"
     done
   fi
 }
@@ -864,7 +944,7 @@ confirm_or_exit() {
   fi
 
   if [[ ! -t 0 ]]; then
-    echo "Error: non-interactive environment detected. Re-run with --yes to continue." >&2
+    echo "错误：检测到当前环境为非交互模式。请重新执行并带上 --yes。" >&2
     exit 1
   fi
 
@@ -872,7 +952,7 @@ confirm_or_exit() {
   case "${answer,,}" in
     y|yes) ;;
     *)
-      echo "Operation cancelled." >&2
+      echo "操作已取消。" >&2
       exit 1
       ;;
   esac
@@ -904,9 +984,9 @@ build_native_install_plan() {
   if command_exists curl; then
     local base='curl -fsSL https://claude.ai/install.sh | bash'
     if [[ "$TARGET" == "latest" ]]; then
-      set_plan "Run the official native installer" "$base"
+      set_plan "执行官方 native 安装脚本" "$base"
     else
-      set_plan "Run the official native installer with a pinned target" "$base -s $TARGET"
+      set_plan "执行指定版本的官方 native 安装脚本" "$base -s $TARGET"
     fi
     return 0
   fi
@@ -914,9 +994,9 @@ build_native_install_plan() {
   require_command wget
   local base='wget -qO- https://claude.ai/install.sh | bash'
   if [[ "$TARGET" == "latest" ]]; then
-    set_plan "Run the official native installer" "$base"
+    set_plan "执行官方 native 安装脚本" "$base"
   else
-    set_plan "Run the official native installer with a pinned target" "$base -s $TARGET"
+    set_plan "执行指定版本的官方 native 安装脚本" "$base -s $TARGET"
   fi
 }
 
@@ -927,9 +1007,9 @@ build_native_update_plan() {
   fi
 
   if [[ "$TARGET" == "latest" ]]; then
-    set_plan "Update the native installation" "$runner update"
+    set_plan "更新 native 安装" "$runner update"
   else
-    set_plan "Switch the native installation to a target release" "$runner install $TARGET"
+    set_plan "把 native 安装切换到指定版本" "$runner install $TARGET"
   fi
 }
 
@@ -948,24 +1028,24 @@ build_homebrew_plan() {
       stable) cask_name="claude-code" ;;
       latest) cask_name="claude-code@latest" ;;
       *)
-        echo "Error: Homebrew in this wrapper supports stable or latest only." >&2
+        echo "错误：当前封装里的 Homebrew 仅支持 stable 或 latest。" >&2
         exit 1
         ;;
     esac
   fi
 
   case "$ACTION" in
-    install) set_plan "Install Claude Code with Homebrew" "brew install --cask $cask_name" ;;
-    update) set_plan "Update Claude Code with Homebrew" "brew upgrade $cask_name" ;;
-    uninstall) set_plan "Remove Claude Code with Homebrew" "brew uninstall --cask $cask_name" ;;
-    *) echo "Error: unsupported action for Homebrew: $ACTION" >&2; exit 1 ;;
+    install) set_plan "使用 Homebrew 安装 Claude Code" "brew install --cask $cask_name" ;;
+    update) set_plan "使用 Homebrew 更新 Claude Code" "brew upgrade $cask_name" ;;
+    uninstall) set_plan "使用 Homebrew 卸载 Claude Code" "brew uninstall --cask $cask_name" ;;
+    *) echo "错误：Homebrew 不支持当前动作：$ACTION" >&2; exit 1 ;;
   esac
 }
 
 build_npm_plan() {
   require_command npm
   if [[ "$TARGET" == "stable" ]]; then
-    echo "Error: npm in this wrapper supports latest or a specific version, not stable." >&2
+    echo "错误：当前封装里的 npm 支持 latest 或具体版本号，不支持 stable。" >&2
     exit 1
   fi
 
@@ -977,7 +1057,7 @@ build_npm_plan() {
       else
         package_spec="@anthropic-ai/claude-code@$TARGET"
       fi
-      set_plan "Install Claude Code with npm" "npm install -g $package_spec"
+      set_plan "使用 npm 安装 Claude Code" "npm install -g $package_spec"
       ;;
     update)
       if [[ "$TARGET" == "latest" ]]; then
@@ -985,13 +1065,13 @@ build_npm_plan() {
       else
         package_spec="@anthropic-ai/claude-code@$TARGET"
       fi
-      set_plan "Update Claude Code with npm" "npm install -g $package_spec"
+      set_plan "使用 npm 更新 Claude Code" "npm install -g $package_spec"
       ;;
     uninstall)
-      set_plan "Remove Claude Code with npm" "npm uninstall -g @anthropic-ai/claude-code"
+      set_plan "使用 npm 卸载 Claude Code" "npm uninstall -g @anthropic-ai/claude-code"
       ;;
     *)
-      echo "Error: unsupported action for npm: $ACTION" >&2
+      echo "错误：npm 不支持当前动作：$ACTION" >&2
       exit 1
       ;;
   esac
@@ -999,7 +1079,7 @@ build_npm_plan() {
 
 build_apt_plan() {
   if [[ "$TARGET" != "stable" && "$TARGET" != "latest" ]]; then
-    echo "Error: apt in this wrapper supports stable or latest only." >&2
+    echo "错误：当前封装里的 apt 仅支持 stable 或 latest。" >&2
     exit 1
   fi
 
@@ -1011,21 +1091,21 @@ build_apt_plan() {
       elif command_exists wget; then
         key_download="sudo wget -qO /etc/apt/keyrings/claude-code.asc https://downloads.claude.ai/keys/claude-code.asc"
       else
-        echo "Error: apt install requires curl or wget." >&2
+        echo "错误：apt 安装需要 curl 或 wget。" >&2
         exit 1
       fi
       set_plan \
-        "Install Claude Code with apt" \
+        "使用 apt 安装 Claude Code" \
         "sudo install -d -m 0755 /etc/apt/keyrings && $key_download && echo \"deb [signed-by=/etc/apt/keyrings/claude-code.asc] https://downloads.claude.ai/claude-code/apt/$TARGET $TARGET main\" | sudo tee /etc/apt/sources.list.d/claude-code.list >/dev/null && sudo apt update && sudo apt install -y claude-code"
       ;;
     update)
-      set_plan "Update Claude Code with apt" "sudo apt update && sudo apt install --only-upgrade -y claude-code"
+      set_plan "使用 apt 更新 Claude Code" "sudo apt update && sudo apt install --only-upgrade -y claude-code"
       ;;
     uninstall)
-      set_plan "Remove Claude Code with apt" "sudo apt remove -y claude-code && sudo rm -f /etc/apt/sources.list.d/claude-code.list /etc/apt/keyrings/claude-code.asc"
+      set_plan "使用 apt 卸载 Claude Code" "sudo apt remove -y claude-code && sudo rm -f /etc/apt/sources.list.d/claude-code.list /etc/apt/keyrings/claude-code.asc"
       ;;
     *)
-      echo "Error: unsupported action for apt: $ACTION" >&2
+      echo "错误：apt 不支持当前动作：$ACTION" >&2
       exit 1
       ;;
   esac
@@ -1033,24 +1113,24 @@ build_apt_plan() {
 
 build_dnf_plan() {
   if [[ "$TARGET" != "stable" && "$TARGET" != "latest" ]]; then
-    echo "Error: dnf in this wrapper supports stable or latest only." >&2
+    echo "错误：当前封装里的 dnf 仅支持 stable 或 latest。" >&2
     exit 1
   fi
 
   case "$ACTION" in
     install)
       set_plan \
-        "Install Claude Code with dnf" \
+        "使用 dnf 安装 Claude Code" \
         "printf '%s\n' '[claude-code]' 'name=Claude Code' 'baseurl=https://downloads.claude.ai/claude-code/rpm/$TARGET/\$basearch' 'enabled=1' 'gpgcheck=1' 'repo_gpgcheck=0' 'gpgkey=https://downloads.claude.ai/keys/claude-code.asc' | sudo tee /etc/yum.repos.d/claude-code.repo >/dev/null && sudo dnf install -y claude-code"
       ;;
     update)
-      set_plan "Update Claude Code with dnf" "sudo dnf upgrade -y claude-code"
+      set_plan "使用 dnf 更新 Claude Code" "sudo dnf upgrade -y claude-code"
       ;;
     uninstall)
-      set_plan "Remove Claude Code with dnf" "sudo dnf remove -y claude-code && sudo rm -f /etc/yum.repos.d/claude-code.repo"
+      set_plan "使用 dnf 卸载 Claude Code" "sudo dnf remove -y claude-code && sudo rm -f /etc/yum.repos.d/claude-code.repo"
       ;;
     *)
-      echo "Error: unsupported action for dnf: $ACTION" >&2
+      echo "错误：dnf 不支持当前动作：$ACTION" >&2
       exit 1
       ;;
   esac
@@ -1058,7 +1138,7 @@ build_dnf_plan() {
 
 build_apk_plan() {
   if [[ "$TARGET" != "stable" && "$TARGET" != "latest" ]]; then
-    echo "Error: apk in this wrapper supports stable or latest only." >&2
+    echo "错误：当前封装里的 apk 仅支持 stable 或 latest。" >&2
     exit 1
   fi
 
@@ -1070,21 +1150,21 @@ build_apk_plan() {
       elif command_exists curl; then
         key_download="sudo curl -fsSL https://downloads.claude.ai/keys/claude-code.rsa.pub -o /etc/apk/keys/claude-code.rsa.pub"
       else
-        echo "Error: apk install requires wget or curl." >&2
+        echo "错误：apk 安装需要 wget 或 curl。" >&2
         exit 1
       fi
       set_plan \
-        "Install Claude Code with apk" \
+        "使用 apk 安装 Claude Code" \
         "$key_download && echo \"https://downloads.claude.ai/claude-code/apk/$TARGET\" | sudo tee -a /etc/apk/repositories >/dev/null && sudo apk update && sudo apk add claude-code"
       ;;
     update)
-      set_plan "Update Claude Code with apk" "sudo apk update && sudo apk upgrade claude-code"
+      set_plan "使用 apk 更新 Claude Code" "sudo apk update && sudo apk upgrade claude-code"
       ;;
     uninstall)
-      set_plan "Remove Claude Code with apk" "sudo apk del claude-code && sudo sed -i '\\|downloads.claude.ai/claude-code/apk|d' /etc/apk/repositories && sudo rm -f /etc/apk/keys/claude-code.rsa.pub"
+      set_plan "使用 apk 卸载 Claude Code" "sudo apk del claude-code && sudo sed -i '\\|downloads.claude.ai/claude-code/apk|d' /etc/apk/repositories && sudo rm -f /etc/apk/keys/claude-code.rsa.pub"
       ;;
     *)
-      echo "Error: unsupported action for apk: $ACTION" >&2
+      echo "错误：apk 不支持当前动作：$ACTION" >&2
       exit 1
       ;;
   esac
@@ -1100,7 +1180,7 @@ build_plan() {
         install) build_native_install_plan ;;
         update) build_native_update_plan ;;
         uninstall) build_native_uninstall_plan ;;
-        *) echo "Error: unsupported action for native: $ACTION" >&2; exit 1 ;;
+        *) echo "错误：native 不支持当前动作：$ACTION" >&2; exit 1 ;;
       esac
       ;;
     homebrew) build_homebrew_plan ;;
@@ -1109,7 +1189,7 @@ build_plan() {
     dnf) build_dnf_plan ;;
     apk) build_apk_plan ;;
     *)
-      echo "Error: unsupported method: $RESOLVED_METHOD" >&2
+      echo "错误：不支持的安装方式：$RESOLVED_METHOD" >&2
       exit 1
       ;;
   esac
@@ -1134,7 +1214,7 @@ verify_install() {
     return 0
   fi
 
-  echo "Error: install/update finished, but version verification failed" >&2
+  echo "错误：安装或更新已经完成，但版本校验失败。" >&2
   exit 1
 }
 
@@ -1146,14 +1226,14 @@ show_remaining_install_hint() {
   done < <(collect_claude_paths)
 
   if [[ ${#paths[@]} -gt 0 ]]; then
-    echo "Uninstall finished, but another claude command is still on PATH:"
+    ui_info "卸载已完成，但 PATH 中仍然存在其他 claude 命令："
     local item
     for item in "${paths[@]}"; do
-      echo "  $item"
+      ui_info "  $item"
     done
-    echo "If this is unexpected, remove the extra installation manually."
+    ui_warn "如果这不是你预期的结果，请手动移除多余的安装。"
   else
-    echo "Uninstall finished."
+    ui_success "卸载已完成。"
   fi
 }
 
@@ -1173,11 +1253,11 @@ resolve_migration_source_method() {
       fi
     done
     if [[ "$supported" -ne 1 ]]; then
-      echo "Error: $system does not support migration source method: $requested" >&2
+      echo "错误：$system 暂不支持迁移来源方式：$requested" >&2
       exit 1
     fi
     if ! method_installed "$requested"; then
-      echo "Error: no $requested installation was detected on this machine." >&2
+      echo "错误：当前机器上未检测到 $requested 安装。" >&2
       exit 1
     fi
     printf '%s\n' "$requested"
@@ -1190,11 +1270,11 @@ resolve_migration_source_method() {
   fi
 
   if [[ ${#STATE_DETECTED_METHODS[@]} -gt 1 ]]; then
-    echo "Error: multiple install methods detected (${STATE_DETECTED_METHODS[*]}). Re-run with --from." >&2
+    echo "错误：检测到多个安装来源（${STATE_DETECTED_METHODS[*]}）。请重新执行并通过 --from 指定迁移来源。" >&2
     exit 1
   fi
 
-  echo "Error: no supported Claude Code installation detected for migration." >&2
+  echo "错误：未检测到可用于迁移的受支持 Claude Code 安装。" >&2
   exit 1
 }
 
@@ -1216,11 +1296,11 @@ resolve_migration_target_method() {
       fi
     done
     if [[ "$supported" -ne 1 ]]; then
-      echo "Error: $system does not support migration target method: $requested" >&2
+      echo "错误：$system 暂不支持迁移目标方式：$requested" >&2
       exit 1
     fi
     if [[ "$requested" == "$source_method" ]]; then
-      echo "Error: migration target method matches the source method: $source_method" >&2
+      echo "错误：迁移目标方式与来源方式相同：$source_method" >&2
       exit 1
     fi
     printf '%s\n' "$requested"
@@ -1242,7 +1322,7 @@ resolve_migration_target_method() {
     fi
   done
 
-  echo "Error: unable to choose a migration target automatically. Re-run with --method." >&2
+  echo "错误：无法自动选择迁移目标。请重新执行并通过 --method 指定目标安装方式。" >&2
   exit 1
 }
 
@@ -1284,25 +1364,25 @@ print_migration_plan() {
     return 0
   fi
 
-  echo "Migration source method: $source_method"
-  echo "Migration target method: $target_method"
+  ui_info "迁移来源方式：$source_method"
+  ui_info "迁移目标方式：$target_method"
   if [[ "$target_already_installed" -eq 1 ]]; then
-    echo "Target install state: already installed"
+    ui_info "目标安装状态：已安装"
   else
-    echo "Target install state: will be installed"
+    ui_info "目标安装状态：待安装"
   fi
-  echo "Migration steps:"
+  ui_info "迁移步骤："
   local step_index=1 command_text
   for command_text in "${step_commands[@]}"; do
-    echo "  $step_index. $command_text"
+    ui_info "  $step_index. $command_text"
     step_index=$((step_index + 1))
   done
 
   if [[ ${#STATE_WARNINGS[@]} -gt 0 ]]; then
-    echo "Warnings:"
+    ui_warn "以下项目需要关注："
     local item
     for item in "${STATE_WARNINGS[@]}"; do
-      echo "  - $item"
+      ui_warn "  - $item"
     done
   fi
 }
@@ -1367,13 +1447,13 @@ run_self_test() {
     return $([[ "$passed" -eq 1 ]] && echo 0 || echo 1)
   fi
 
-  echo "Self-test summary: $([[ "$passed" -eq 1 ]] && echo passed || echo failed)"
+  ui_info "自检结果：$([[ "$passed" -eq 1 ]] && echo 通过 || echo 失败)"
   local result name exit_code
   for result in "${results[@]}"; do
     name="${result%%|*}"
     local rest="${result#*|}"
     exit_code="${rest%%|*}"
-    echo "  - $name: $([[ "$exit_code" -eq 0 ]] && echo ok || echo failed)"
+    ui_info "  - $(get_self_test_check_display_name "$name")：$([[ "$exit_code" -eq 0 ]] && echo 通过 || echo 失败)"
   done
 
   return $([[ "$passed" -eq 1 ]] && echo 0 || echo 1)
@@ -1382,27 +1462,34 @@ run_self_test() {
 main() {
   local system arch
 
+  ui_progress "$ACTION" '正在收集运行环境信息' 5
   system="$(detect_system)"
   if [[ "$system" == "unsupported" ]]; then
-    echo "Error: unsupported system" >&2
+    echo "错误：暂不支持当前系统。" >&2
     exit 1
   fi
 
   CURRENT_SYSTEM="$system"
   arch="$(normalize_architecture)"
+  ui_progress "$ACTION" '正在检测当前安装状态' 15
   build_state "$system"
 
   if [[ "$ACTION" == "self-test" ]]; then
+    ui_progress "$ACTION" '正在执行脚本自检' 40
     run_self_test "$system" "$arch"
+    ui_progress_done "$ACTION"
     exit $?
   fi
 
   if [[ "$ACTION" == "doctor" ]]; then
+    ui_progress "$ACTION" '正在分析环境并生成诊断结果' 45
     RESOLVED_METHOD="$(resolve_method "$system" "$METHOD" "$ACTION")"
     print_doctor "$system" "$arch" "$RESOLVED_METHOD"
     if [[ "$FIX" -eq 1 ]]; then
+      ui_progress "$ACTION" '正在执行低风险修复' 75
       run_doctor_fix "$system" "$arch"
     fi
+    ui_progress_done "$ACTION"
     exit 0
   fi
 
@@ -1410,6 +1497,7 @@ main() {
     local source_method target_method target_already_installed
     local step_commands=()
 
+    ui_progress "$ACTION" '正在解析迁移来源和目标' 30
     source_method="$(resolve_migration_source_method "$system" "$FROM_METHOD")"
     target_method="$(resolve_migration_target_method "$system" "$METHOD" "$source_method")"
     target_already_installed=0
@@ -1429,22 +1517,25 @@ main() {
     local migrate_remove_command="$BUILT_PLAN_COMMAND"
     step_commands+=("$migrate_remove_command")
 
+    ui_progress "$ACTION" '正在生成迁移计划' 45
     print_migration_plan "$system" "$arch" "$source_method" "$target_method" "$target_already_installed" "${step_commands[@]}"
 
     if [[ "$DRY_RUN" -eq 1 ]]; then
       if [[ "$JSON" -ne 1 ]]; then
-        echo "Dry-run mode enabled. Nothing was executed."
+        ui_info "当前为预演模式，没有执行任何实际变更。"
       fi
+      ui_progress_done "$ACTION"
       exit 0
     fi
 
-    confirm_or_exit "Claude Code will be migrated from $source_method to $target_method. Continue?"
+    confirm_or_exit "即将把 Claude Code 从 $source_method 迁移到 $target_method，是否继续？"
+    ui_progress "$ACTION" '正在执行迁移步骤' 70
 
     if [[ "$target_already_installed" -eq 0 ]]; then
       bash -lc "$migrate_install_command"
       build_state "$system"
       if ! method_installed "$target_method"; then
-        echo "Error: migration stopped because the target method $target_method was not detected after install." >&2
+        echo "错误：迁移已中止，因为安装完成后没有检测到目标安装方式 $target_method。" >&2
         exit 1
       fi
     fi
@@ -1452,28 +1543,32 @@ main() {
     bash -lc "$migrate_remove_command"
 
     if [[ "$SKIP_VERIFY" -eq 1 ]]; then
-      echo "Migration finished. Verification was skipped."
+      ui_success "迁移已完成，已按要求跳过校验。"
       show_remaining_install_hint
+      ui_progress_done "$ACTION"
       exit 0
     fi
 
+    ui_progress "$ACTION" '正在校验迁移结果' 90
     build_state "$system"
     if ! method_installed "$target_method"; then
-      echo "Error: migration finished, but the target method $target_method was not detected afterwards." >&2
+      echo "错误：迁移已完成，但后续没有检测到目标安装方式 $target_method。" >&2
       exit 1
     fi
 
     local version_output
     version_output="$(verify_install)"
     if [[ -n "$version_output" ]]; then
-      echo "Migration succeeded: $version_output"
+      ui_success "迁移成功，当前版本：$version_output"
     else
-      echo "Migration succeeded."
+      ui_success "迁移成功。"
     fi
     show_remaining_install_hint
+    ui_progress_done "$ACTION"
     exit 0
   fi
 
+  ui_progress "$ACTION" '正在解析安装方式与执行计划' 35
   RESOLVED_METHOD="$(resolve_method "$system" "$METHOD" "$ACTION")"
 
   if [[ "$ACTION" != "status" ]]; then
@@ -1483,18 +1578,20 @@ main() {
   print_status "$system" "$arch" "$RESOLVED_METHOD"
 
   if [[ "$ACTION" == "status" ]]; then
+    ui_progress_done "$ACTION"
     exit 0
   fi
 
   if [[ "$ACTION" == "install" && ( ${#STATE_DETECTED_METHODS[@]} -gt 0 || ${#STATE_CLAUDE_PATHS[@]} -gt 0 ) && "$FORCE" -ne 1 ]]; then
     if [[ "$JSON" -ne 1 ]]; then
-      echo "Claude Code already appears to be installed. Re-run with --force to reinstall."
+      ui_info "Claude Code 看起来已经安装。如需重新安装，请带上 --force。"
     fi
+    ui_progress_done "$ACTION"
     exit 0
   fi
 
   if [[ "$ACTION" != "install" ]] && ! method_installed "$RESOLVED_METHOD"; then
-    echo "Error: no $RESOLVED_METHOD installation was detected on this machine." >&2
+    echo "错误：当前机器上未检测到 $RESOLVED_METHOD 安装。" >&2
     exit 1
   fi
 
@@ -1502,40 +1599,47 @@ main() {
     exit 0
   fi
 
-  echo "Plan note: $PLAN_NOTE"
-  echo "Plan command: $PLAN_COMMAND"
+  ui_info "执行说明：$PLAN_NOTE"
+  ui_info "执行命令：$PLAN_COMMAND"
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    echo "Dry-run mode enabled. Nothing was executed."
+    ui_info "当前为预演模式，没有执行任何实际变更。"
+    ui_progress_done "$ACTION"
     exit 0
   fi
 
   case "$ACTION" in
-    install) confirm_or_exit "Claude Code will be installed or reinstalled. Continue?" ;;
-    update) confirm_or_exit "Claude Code will be updated. Continue?" ;;
-    uninstall) confirm_or_exit "Claude Code will be removed. Continue?" ;;
+    install) confirm_or_exit "即将安装或重新安装 Claude Code，是否继续？" ;;
+    update) confirm_or_exit "即将更新 Claude Code，是否继续？" ;;
+    uninstall) confirm_or_exit "即将卸载 Claude Code，是否继续？" ;;
   esac
 
+  ui_progress "$ACTION" '正在执行计划命令' 70
   bash -lc "$PLAN_COMMAND"
 
   if [[ "$ACTION" == "uninstall" ]]; then
     show_remaining_install_hint
+    ui_progress_done "$ACTION"
     exit 0
   fi
 
   if [[ "$SKIP_VERIFY" -eq 1 ]]; then
-    echo "$ACTION finished. Verification was skipped."
+    ui_success "$(get_action_display_name "$ACTION")已完成，已按要求跳过校验。"
+    ui_progress_done "$ACTION"
     exit 0
   fi
 
+  ui_progress "$ACTION" '正在校验执行结果' 90
   build_state "$system"
   local version_output
   version_output="$(verify_install)"
   if [[ -n "$version_output" ]]; then
-    echo "$ACTION succeeded: $version_output"
+    ui_success "$(get_action_display_name "$ACTION")成功，当前版本：$version_output"
   else
-    echo "$ACTION succeeded."
+    ui_success "$(get_action_display_name "$ACTION")成功。"
   fi
+
+  ui_progress_done "$ACTION"
 }
 
 PLAN_NOTE=""
