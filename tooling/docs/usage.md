@@ -163,7 +163,7 @@ bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native
 bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --yes
 ```
 
-如果你的 macOS 环境不是通过 `homebrew` 安装，而是通过 `npm` 安装，把上面命令里的 `--method homebrew` 改成 `--method npm` 即可。
+当前 `macOS Terminal` 入口不支持 `report`。如果你的 macOS 环境不是通过 `homebrew` 安装，而是通过 `npm` 安装，把上面命令里的 `--method homebrew` 改成 `--method npm` 即可。
 
 ## Linux Terminal
 
@@ -207,6 +207,18 @@ bash ./tooling/scripts/install_claude_code.sh update --method dnf --yes
 bash ./tooling/scripts/install_claude_code.sh uninstall --method dnf --dry-run --yes
 # 通过 dnf 真实执行卸载
 bash ./tooling/scripts/install_claude_code.sh uninstall --method dnf --yes
+# 查看当前安装状态和检测到的安装来源
+bash ./tooling/scripts/install_claude_code.sh status
+# 诊断当前环境并给出后续建议
+bash ./tooling/scripts/install_claude_code.sh doctor
+# 预演低风险修复，不实际修改当前环境
+bash ./tooling/scripts/install_claude_code.sh doctor --fix --dry-run
+# 运行内置自检，并保留 JSON 结构化结果
+bash ./tooling/scripts/install_claude_code.sh self-test --json
+# 预演从 npm 迁移到 native，不实际执行迁移
+bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --dry-run --yes
+# 从 npm 真实迁移到 native
+bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --yes
 ```
 
 ### Alpine Linux
@@ -222,11 +234,6 @@ bash ./tooling/scripts/install_claude_code.sh update --method apk --yes
 bash ./tooling/scripts/install_claude_code.sh uninstall --method apk --dry-run --yes
 # 通过 apk 真实执行卸载
 bash ./tooling/scripts/install_claude_code.sh uninstall --method apk --yes
-```
-
-## WSL Terminal
-
-```bash
 # 查看当前安装状态和检测到的安装来源
 bash ./tooling/scripts/install_claude_code.sh status
 # 诊断当前环境并给出后续建议
@@ -235,13 +242,42 @@ bash ./tooling/scripts/install_claude_code.sh doctor
 bash ./tooling/scripts/install_claude_code.sh doctor --fix --dry-run
 # 运行内置自检，并保留 JSON 结构化结果
 bash ./tooling/scripts/install_claude_code.sh self-test --json
-# 如果你要管理 WSL 内自己的安装，可按 Debian / Ubuntu 风格预演 apt 安装
-bash ./tooling/scripts/install_claude_code.sh install --method apt --dry-run --yes
-# 如果你确认要在 WSL 内真实安装，再执行真实安装命令
-bash ./tooling/scripts/install_claude_code.sh install --method apt --yes
+# 预演从 npm 迁移到 native，不实际执行迁移
+bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --dry-run --yes
+# 从 npm 真实迁移到 native
+bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --yes
 ```
 
-如果 `WSL Terminal` 里检测到的是 Windows 版本的 `claude`，请改用 `Windows CMD` 或 `Windows PowerShell` 命令管理它，不要在 WSL 里直接卸载或迁移 Windows 安装。
+当前 `Linux Terminal` 入口不支持 `report`。
+
+## WSL Terminal
+
+```bash
+# 按默认推荐方式在 WSL 内安装 Claude Code
+bash ./tooling/scripts/install_claude_code.sh install --method apt --yes
+# 预演通过 apt 更新，不实际执行更新
+bash ./tooling/scripts/install_claude_code.sh update --method apt --dry-run --yes
+# 通过 apt 真实执行更新
+bash ./tooling/scripts/install_claude_code.sh update --method apt --yes
+# 预演通过 apt 卸载，不实际执行卸载
+bash ./tooling/scripts/install_claude_code.sh uninstall --method apt --dry-run --yes
+# 通过 apt 真实执行卸载
+bash ./tooling/scripts/install_claude_code.sh uninstall --method apt --yes
+# 查看当前安装状态和检测到的安装来源
+bash ./tooling/scripts/install_claude_code.sh status
+# 诊断当前环境并给出后续建议
+bash ./tooling/scripts/install_claude_code.sh doctor
+# 预演低风险修复，不实际修改当前环境
+bash ./tooling/scripts/install_claude_code.sh doctor --fix --dry-run
+# 运行内置自检，并保留 JSON 结构化结果
+bash ./tooling/scripts/install_claude_code.sh self-test --json
+# 预演从 npm 迁移到 native，不实际执行迁移
+bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --dry-run --yes
+# 从 npm 真实迁移到 native
+bash ./tooling/scripts/install_claude_code.sh migrate --from npm --method native --yes
+```
+
+当前 `WSL Terminal` 入口不支持 `report`。如果 `WSL Terminal` 里检测到的是 Windows 版本的 `claude`，请改用 `Windows CMD` 或 `Windows PowerShell` 命令管理它，不要在 WSL 里直接卸载或迁移 Windows 安装。
 
 ## 推荐顺序
 
