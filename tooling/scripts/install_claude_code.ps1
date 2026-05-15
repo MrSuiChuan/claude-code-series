@@ -130,12 +130,52 @@ function Complete-UiProgress {
 }
 
 function Get-NormalizedArchitecture {
-    $raw = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+    $raw = $null
+
+    try {
+        $raw = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+    } catch {
+    }
+
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        try {
+            $raw = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
+        } catch {
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($raw) -and $env:PROCESSOR_ARCHITEW6432) {
+        $raw = $env:PROCESSOR_ARCHITEW6432
+    }
+
+    if ([string]::IsNullOrWhiteSpace($raw) -and $env:PROCESSOR_ARCHITECTURE) {
+        $raw = $env:PROCESSOR_ARCHITECTURE
+    }
+
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        try {
+            $uname = & uname -m 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $raw = ($uname | Out-String).Trim()
+            }
+        } catch {
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        $raw = if ([Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
+    }
+
+    $raw = $raw.ToLowerInvariant()
     switch ($raw) {
         "x64" { return "x64" }
         "amd64" { return "x64" }
         "arm64" { return "arm64" }
+        "aarch64" { return "arm64" }
+        "armv8l" { return "arm64" }
         "x86" { return "x86" }
+        "i386" { return "x86" }
+        "i686" { return "x86" }
         default { return $raw }
     }
 }
