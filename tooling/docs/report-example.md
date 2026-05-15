@@ -2,13 +2,21 @@
 
 `report` 目前只在 `Windows CMD` 和 `Windows PowerShell` 入口提供，不在 `macOS Terminal`、`Linux Terminal`、`WSL Terminal` 入口提供。
 
+为了让命令最短，默认先进入 `tooling/scripts` 目录，再执行下面命令：
+
+- `Windows CMD`
+  `install_claude_code.cmd report`
+
+- `Windows PowerShell`
+  `.\install_claude_code.ps1 report`
+
 ## 适用环境
 
 - `Windows CMD`
-  `tooling\scripts\install_claude_code.cmd report`
+  `install_claude_code.cmd report`
 
 - `Windows PowerShell`
-  `powershell -NoProfile -ExecutionPolicy Bypass -File ".\tooling\scripts\install_claude_code.ps1" report`
+  `.\install_claude_code.ps1 report`
 
 ## 典型输出
 
