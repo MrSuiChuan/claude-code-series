@@ -419,15 +419,15 @@ function Get-InstallationState {
     }
 
     if ($state.LegacyLocalInstalled) {
-        Add-UniqueItem -List $warnings -Value "Detected legacy local files under .claude/local. Remove them if they are from an older install."
+        Add-UniqueItem -List $warnings -Value "检测到 .claude/local 下存在遗留文件。如果这是旧安装留下的内容，请确认后删除。"
     }
 
     if ($state.ClaudePaths.Count -gt 1) {
-        Add-UniqueItem -List $warnings -Value "Detected multiple claude commands on PATH. Keep only one installation method to avoid version mismatches."
+        Add-UniqueItem -List $warnings -Value "检测到 PATH 中存在多个 claude 命令。建议只保留一种安装方式，避免版本混用。"
     }
 
     if ($detectedMethods.Count -gt 1) {
-        Add-UniqueItem -List $warnings -Value ("Detected multiple install methods: " + (($detectedMethods.ToArray() | Sort-Object) -join ", "))
+        Add-UniqueItem -List $warnings -Value ("检测到多个安装来源：" + (($detectedMethods.ToArray() | Sort-Object) -join ", "))
     }
 
     $state.DetectedMethods = @($detectedMethods.ToArray() | Sort-Object)
@@ -1375,6 +1375,14 @@ function Invoke-SelfTest {
 
     $results = New-Object System.Collections.Generic.List[object]
     $state = Get-InstallationState -Runtime $Runtime
+    $availableMethodsForSelfTest = @(Get-AvailableInstallMethods -Runtime $Runtime)
+    $expectedChecks = 3
+    if ($state.DetectedMethods.Count -gt 0) {
+        $expectedChecks += 2
+    } elseif ($availableMethodsForSelfTest.Count -gt 0) {
+        $expectedChecks += 1
+    }
+    $completedChecks = 0
     $resolvedForDoctor = Resolve-Method -Runtime $Runtime -RequestedMethod $Method -CurrentAction "doctor" -State $state
     $results.Add([pscustomobject]@{
         name = "status-state"
@@ -1382,6 +1390,8 @@ function Invoke-SelfTest {
         exitCode = 0
         output = ((New-StatusObject -Runtime $Runtime -State $state -ResolvedMethod $resolvedForDoctor -Plan $null) | ConvertTo-Json -Depth 5 -Compress)
     }) | Out-Null
+    $completedChecks++
+    Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'status-state')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
 
     $doctorObject = New-DoctorObject -Runtime $Runtime -State $state -ResolvedMethod $resolvedForDoctor
     $results.Add([pscustomobject]@{
@@ -1390,6 +1400,8 @@ function Invoke-SelfTest {
         exitCode = 0
         output = ($doctorObject | ConvertTo-Json -Depth 5 -Compress)
     }) | Out-Null
+    $completedChecks++
+    Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'doctor-state')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
 
     try {
         $originalDryRun = $DryRun
@@ -1413,6 +1425,8 @@ function Invoke-SelfTest {
             exitCode = 0
             output = ($fixOutput | ConvertTo-Json -Depth 4 -Compress)
         }) | Out-Null
+        $completedChecks++
+        Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'doctor-fix-dryrun')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
         $script:DryRun = $originalDryRun
     } catch {
         $script:DryRun = $originalDryRun
@@ -1422,6 +1436,8 @@ function Invoke-SelfTest {
             exitCode = 1
             output = $_.Exception.Message
         }) | Out-Null
+        $completedChecks++
+        Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'doctor-fix-dryrun')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
     }
 
     try {
@@ -1434,6 +1450,8 @@ function Invoke-SelfTest {
                 exitCode = 0
                 output = $updatePlan.DisplayCommand
             }) | Out-Null
+            $completedChecks++
+            Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'update-dryrun-plan')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
 
             $uninstallPlan = Get-ActionPlan -Runtime $Runtime -State $state -ResolvedMethod $methodToTest -CurrentAction "uninstall"
             $results.Add([pscustomobject]@{
@@ -1442,10 +1460,11 @@ function Invoke-SelfTest {
                 exitCode = 0
                 output = $uninstallPlan.DisplayCommand
             }) | Out-Null
+            $completedChecks++
+            Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'uninstall-dryrun-plan')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
         } else {
-            $availableMethods = @(Get-AvailableInstallMethods -Runtime $Runtime)
-            if ($availableMethods.Count -gt 0) {
-                $methodToTest = $availableMethods[0]
+            if ($availableMethodsForSelfTest.Count -gt 0) {
+                $methodToTest = $availableMethodsForSelfTest[0]
                 $installPlan = Get-ActionPlan -Runtime $Runtime -State $state -ResolvedMethod $methodToTest -CurrentAction "install"
                 $results.Add([pscustomobject]@{
                     name = "install-dryrun-plan"
@@ -1453,6 +1472,8 @@ function Invoke-SelfTest {
                     exitCode = 0
                     output = $installPlan.DisplayCommand
                 }) | Out-Null
+                $completedChecks++
+                Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'install-dryrun-plan')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
             }
         }
     } catch {
@@ -1462,6 +1483,8 @@ function Invoke-SelfTest {
             exitCode = 1
             output = $_.Exception.Message
         }) | Out-Null
+        $completedChecks++
+        Write-UiProgress -ActionName "self-test" -Status "正在执行：$(Get-SelfTestCheckDisplayName -Name 'plan-generation')" -Percent (40 + [int](($completedChecks / $expectedChecks) * 50))
     }
 
     $allPassed = -not ($results | Where-Object { -not $_.success })

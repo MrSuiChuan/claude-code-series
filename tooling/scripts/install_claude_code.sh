@@ -96,7 +96,7 @@ ui_progress_done() {
 usage() {
   cat <<'EOF'
 用法：
-  ./install_claude_code.sh [install|update|uninstall|status|doctor|migrate|self-test] [options]
+  ./install_claude_code.sh [install|update|uninstall|status|doctor|migrate|self-test] [参数]
 
 动作：
   install      安装 Claude Code
@@ -368,10 +368,10 @@ build_state() {
     fi
 
     if [[ "$path_entry" == "$HOME/.claude/local/"* ]]; then
-      append_unique "Detected legacy local files under .claude/local. Remove them if they are from an older install." STATE_WARNINGS
+      append_unique "检测到 .claude/local 下存在遗留文件。如果这是旧安装留下的内容，请确认后删除。" STATE_WARNINGS
     fi
     if [[ "$system" == "wsl" && "$path_entry" == /mnt/[a-z]/Users/*/AppData/* ]]; then
-      append_unique "Detected a Windows claude command on the WSL PATH. Use the Windows script if you want to manage that installation." STATE_WARNINGS
+      append_unique "检测到 WSL 的 PATH 中存在 Windows 版本的 claude 命令。如果你要管理这个安装，请使用 Windows 脚本。" STATE_WARNINGS
     fi
 
     if [[ "$resolved_path" == *"/node_modules/@anthropic-ai/claude-code/"* || "$resolved_path" == *"/node_modules/@anthropic-ai/claude-code" ]]; then
@@ -381,15 +381,15 @@ build_state() {
   done < <(collect_claude_paths)
 
   if [[ -d "$STATE_LEGACY_LOCAL_PATH" ]]; then
-    append_unique "Detected legacy local files under .claude/local. Remove them if they are from an older install." STATE_WARNINGS
+    append_unique "检测到 .claude/local 下存在遗留文件。如果这是旧安装留下的内容，请确认后删除。" STATE_WARNINGS
   fi
 
   if [[ ${#STATE_CLAUDE_PATHS[@]} -gt 1 ]]; then
-    append_unique "Detected multiple claude commands on PATH. Keep only one installation method to avoid version mismatches." STATE_WARNINGS
+    append_unique "检测到 PATH 中存在多个 claude 命令。建议只保留一种安装方式，避免版本混用。" STATE_WARNINGS
   fi
 
   if [[ ${#STATE_DETECTED_METHODS[@]} -gt 1 ]]; then
-    append_unique "Detected multiple install methods: ${STATE_DETECTED_METHODS[*]}" STATE_WARNINGS
+    append_unique "检测到多个安装来源：${STATE_DETECTED_METHODS[*]}" STATE_WARNINGS
   fi
 }
 
@@ -1015,7 +1015,7 @@ build_native_update_plan() {
 
 build_native_uninstall_plan() {
   set_plan \
-    "Remove the native binary and version files" \
+    "移除 native 可执行文件和版本目录" \
     "rm -f \"$STATE_NATIVE_PATH\" && rm -rf \"$STATE_NATIVE_SHARE_PATH\""
 }
 
@@ -1412,7 +1412,8 @@ run_self_test() {
 
   local passed=1
   local results=()
-  local check
+  local check completed=0 total_checks=0
+  total_checks="${#checks[@]}"
   for check in "${checks[@]}"; do
     output="$(bash "$0" $check 2>&1 || true)"
     status_code=$?
@@ -1420,6 +1421,8 @@ run_self_test() {
       passed=0
     fi
     results+=("$check|$status_code|$output")
+    completed=$((completed + 1))
+    ui_progress "self-test" "正在执行：$(get_self_test_check_display_name "$check")" $((40 + completed * 50 / total_checks))
   done
 
   if [[ "$JSON" -eq 1 ]]; then
