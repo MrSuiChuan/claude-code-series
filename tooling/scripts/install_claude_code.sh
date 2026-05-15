@@ -51,16 +51,25 @@ get_self_test_check_display_name() {
 
 ui_info() {
   [[ "$JSON" -eq 1 ]] && return 0
+  if [[ -t 1 ]]; then
+    printf '\r\033[K'
+  fi
   printf '%s\n' "$1"
 }
 
 ui_warn() {
   [[ "$JSON" -eq 1 ]] && return 0
+  if [[ -t 1 ]]; then
+    printf '\r\033[K'
+  fi
   printf '%s\n' "警告：$1"
 }
 
 ui_success() {
   [[ "$JSON" -eq 1 ]] && return 0
+  if [[ -t 1 ]]; then
+    printf '\r\033[K'
+  fi
   printf '%s\n' "$1"
 }
 
@@ -454,6 +463,52 @@ get_entry_command() {
   printf '%s\n' 'bash ./install_claude_code.sh'
 }
 
+print_missing_method_guidance() {
+  local system="$1"
+  local requested_method="$2"
+  local entry_command
+  entry_command="$(get_entry_command)"
+
+  echo "错误：当前机器上未检测到 $requested_method 安装。" >&2
+
+  if [[ "$system" == "wsl" ]]; then
+    local windows_path_detected=0
+    local item
+    for item in "${STATE_CLAUDE_PATHS[@]}"; do
+      if [[ "$item" == /mnt/[a-z]/Users/*/AppData/* ]]; then
+        windows_path_detected=1
+        break
+      fi
+    done
+
+    if [[ "$windows_path_detected" -eq 1 ]]; then
+      echo "说明：当前检测到的是 Windows 版本的 Claude 命令，不是 WSL 内部的 $requested_method 安装。" >&2
+      echo "建议下一步：" >&2
+      echo "  1. 如果你要管理 Windows 里的 Claude Code，请回到 Windows PowerShell 或 Windows CMD 执行对应命令。" >&2
+      echo "  2. 如果你要管理 WSL 里的 Claude Code，请先执行：$entry_command install --method $requested_method --dry-run --yes" >&2
+      echo "  3. 先看诊断建议可执行：$entry_command doctor" >&2
+      return 0
+    fi
+  fi
+
+  if [[ ${#STATE_DETECTED_METHODS[@]} -gt 0 ]]; then
+    echo "说明：当前检测到的安装来源是：${STATE_DETECTED_METHODS[*]}" >&2
+    echo "建议下一步：" >&2
+    echo "  1. 如果你要管理已检测到的安装，请改用对应方式，例如：$entry_command update --method ${STATE_DETECTED_METHODS[0]} --dry-run --yes" >&2
+    echo "  2. 如果你要切换到 $requested_method，请先安装或先做迁移预演。" >&2
+    if [[ " ${STATE_DETECTED_METHODS[*]} " == *" npm "* ]]; then
+      echo "  3. 例如可以先执行：$entry_command migrate --from npm --method native --dry-run --yes" >&2
+    else
+      echo "  3. 可以先执行：$entry_command doctor" >&2
+    fi
+    return 0
+  fi
+
+  echo "建议下一步：" >&2
+  echo "  1. 先执行环境诊断：$entry_command doctor" >&2
+  echo "  2. 如果你准备在当前环境安装 $requested_method，请先预演：$entry_command install --method $requested_method --dry-run --yes" >&2
+}
+
 get_claude_version_text() {
   local candidate output
 
@@ -517,6 +572,24 @@ get_doctor_recommendations() {
   local entry_command available_methods only_method
   entry_command="$(get_entry_command)"
   mapfile -t available_methods < <(get_available_install_methods "$system")
+
+  if [[ "$system" == "wsl" ]]; then
+    local windows_path_detected=0
+    local item
+    for item in "${STATE_CLAUDE_PATHS[@]}"; do
+      if [[ "$item" == /mnt/[a-z]/Users/*/AppData/* ]]; then
+        windows_path_detected=1
+        break
+      fi
+    done
+
+    if [[ "$windows_path_detected" -eq 1 ]]; then
+      printf '%s\n' '当前检测到的是 Windows 版本的 Claude 命令；如果你要管理它，请回到 Windows PowerShell 或 Windows CMD。'
+      printf '%s\n' "$entry_command install --method apt --dry-run --yes"
+      printf '%s\n' "$entry_command install --method native --dry-run --yes"
+      return 0
+    fi
+  fi
 
   if [[ ${#STATE_DETECTED_METHODS[@]} -eq 0 && ${#available_methods[@]} -gt 0 ]]; then
     printf '%s\n' "$entry_command install --yes"
@@ -1257,7 +1330,7 @@ resolve_migration_source_method() {
       exit 1
     fi
     if ! method_installed "$requested"; then
-      echo "错误：当前机器上未检测到 $requested 安装。" >&2
+      print_missing_method_guidance "$system" "$requested"
       exit 1
     fi
     printf '%s\n' "$requested"
@@ -1594,7 +1667,7 @@ main() {
   fi
 
   if [[ "$ACTION" != "install" ]] && ! method_installed "$RESOLVED_METHOD"; then
-    echo "错误：当前机器上未检测到 $RESOLVED_METHOD 安装。" >&2
+    print_missing_method_guidance "$system" "$RESOLVED_METHOD"
     exit 1
   fi
 
