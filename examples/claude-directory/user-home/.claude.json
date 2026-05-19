@@ -1,0 +1,10 @@
+{
+  "autoConnectIde": true,
+  "externalEditorContext": true,
+  "mcpServers": {
+    "my-tools": {
+      "command": "npx",
+      "args": ["-y", "@example/mcp-server"]
+    }
+  }
+}
