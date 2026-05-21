@@ -1,11 +1,35 @@
 # claude-code-series
 
-这个仓库集中存放 Claude Code 相关的可复用脚本、配置模板和目录样例，当前主要分成两部分：
+这个仓库用于沉淀 Claude Code 相关的可复用脚本和项目级配置模板，重点解决两类实际问题：
 
-- `tooling/`：安装、更新、卸载、诊断、自检等生命周期脚本
-- `claude-directory/`：按 `claude-directory` 结构整理的配置样例，方便直接参考或二次改造
+- Claude Code 的安装、更新、卸载、诊断和迁移不够顺手
+- 项目里想把 `CLAUDE.md`、`.claude/`、rules、commands、skills 这些配置真正落下来，但缺少一套能直接改的参考模板
 
-当前 `claude-directory/project-root/` 已按网页系统开发场景补成一套可直接复用的模板，默认技术栈为：
+仓库只放脚本、配置和样例文件，不放文章正文、翻译文档、公众号草稿，也不提交本机私有 skill。
+
+## 仓库结构
+
+- `tooling/`
+  Claude Code 生命周期管理脚本，覆盖安装、更新、卸载、状态检查、诊断、自检、迁移和报告生成
+
+- `claude-directory/`
+  按 `claude-directory` 结构整理的项目级配置样例，当前保留一套面向网页系统开发的 `project-root/` 模板
+
+## 先看哪里
+
+如果你的目标是管理 Claude Code 的安装与运维：
+
+- 先看 [tooling/README.md](./tooling/README.md)
+- 实际脚本入口在 [tooling/scripts](./tooling/scripts)
+
+如果你的目标是给项目补一套可直接复用的 Claude Code 配置：
+
+- 先看 [claude-directory/README.md](./claude-directory/README.md)
+- 模板主体在 [claude-directory/project-root](./claude-directory/project-root)
+
+## 当前模板定位
+
+`claude-directory/project-root/` 现在是一套面向网页系统开发的项目级模板，默认技术栈为：
 
 - `React`
 - `Next.js App Router`
@@ -17,4 +41,75 @@
 - `Vitest`
 - `Playwright`
 
-仓库只放脚本、配置和样例文件，不放文章正文、翻译文档、公众号草稿，也不提交本机私有 skill。
+模板里已经补了这些内容：
+
+- 项目级 `CLAUDE.md`
+- `.claude/rules/`
+- `.claude/commands/`
+- `.claude/skills/`
+- `.claude/agents/`
+- `.claude/agent-memory/`
+- `.claude/settings.json`
+- `.claude/settings.local.json`
+- `.claude/hooks/`
+- `.mcp.json`
+- `.worktreeinclude`
+
+这套模板适合直接复制到业务仓库里，再按你的技术栈和团队习惯做删改。
+
+## 快速开始
+
+### 1. 管理 Claude Code 安装
+
+进入脚本目录：
+
+```powershell
+cd .\tooling\scripts
+```
+
+常见入口：
+
+- `Windows CMD`：`install_claude_code.cmd`
+- `Windows PowerShell`：`.\install_claude_code.ps1`
+- `macOS Terminal` / `Linux Terminal` / `WSL Terminal`：`bash install_claude_code.sh`
+
+想先检查环境：
+
+```powershell
+.\install_claude_code.ps1 doctor
+```
+
+```bash
+bash install_claude_code.sh doctor
+```
+
+完整命令清单和各环境写法见 [tooling/README.md](./tooling/README.md)。
+
+### 2. 复制项目模板
+
+建议从这里开始看：
+
+- [claude-directory/project-root/CLAUDE.md](./claude-directory/project-root/CLAUDE.md)
+- [claude-directory/project-root/.claude/settings.json](./claude-directory/project-root/.claude/settings.json)
+- [claude-directory/project-root/.claude/rules](./claude-directory/project-root/.claude/rules)
+
+落地时通常只需要做三件事：
+
+1. 把 `project-root/` 下的目录结构复制到你的业务仓库
+2. 按项目实际技术栈删改 rules、commands、skills 和 agents
+3. 调整 `settings.local.json`、`worktree.baseRef`、hooks 和 MCP 配置
+
+## 适合谁用
+
+- 想把 Claude Code 真正接入项目协作流程的人
+- 想统一团队级 `CLAUDE.md` 和 `.claude/` 约束的人
+- 想给 Claude Code 做一套更省事的安装与维护脚本的人
+- 想找一套网页系统方向参考模板的人
+
+## 说明
+
+- `tooling/` 偏执行和运维
+- `claude-directory/` 偏项目规范和配置落地
+- 两部分可以单独使用，也可以配合使用
+
+如果你只是想快速上手，优先从 `tooling/README.md` 和 `claude-directory/README.md` 这两个入口开始。
