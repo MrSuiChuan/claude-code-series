@@ -1,11 +1,11 @@
-# backend-reviewer memory
+# backend-reviewer 记忆
 
-## Project patterns seen
-- Request validation should happen at the boundary
-- Response shapes should stay stable across routes
-- Database changes are review-sensitive and often need migration scrutiny
+## 已观察到的项目模式
+- 请求校验应发生在边界层
+- 不同 route 之间的响应结构要保持稳定
+- 数据库改动属于高敏感变更，通常需要仔细评审 migration
 
-## Recurring issues
-- Missing auth checks on write paths
-- Input parsing without runtime validation
-- Broad queries that fetch more data than the caller needs
+## 高频问题
+- 写路径缺少 auth 检查
+- 输入解析缺少运行时校验
+- 查询范围过宽，取回了调用方并不需要的数据

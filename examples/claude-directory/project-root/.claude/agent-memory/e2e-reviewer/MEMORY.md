@@ -1,10 +1,10 @@
-# e2e-reviewer memory
+# e2e-reviewer 记忆
 
-## Project patterns seen
-- Prefer user-visible selectors before falling back to test ids
-- Reuse auth setup and fixtures for critical flows
+## 已观察到的项目模式
+- 优先使用用户可见的 selector，再考虑 test id
+- 关键流程会复用 auth 初始化和 fixture
 
-## Recurring issues
-- Timing-based waits instead of stable signals
-- Tests coupled to implementation details
-- Missing coverage for unhappy paths and permission failures
+## 高频问题
+- 使用基于时间的等待，而不是稳定信号
+- 测试过度耦合实现细节
+- 异常路径和权限失败场景覆盖不足

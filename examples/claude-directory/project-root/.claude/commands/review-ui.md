@@ -2,14 +2,14 @@
 argument-hint: <path-or-screen>
 ---
 
-Review the UI implementation for $ARGUMENTS.
+评审 $ARGUMENTS 的 UI 实现。
 
-Focus on:
+重点关注：
 
-1. Visual consistency with nearby screens
-2. Responsive behavior
-3. Accessibility and keyboard use
-4. Loading, empty, and error states
-5. Unnecessary client-side complexity
+1. 与附近页面是否保持视觉一致
+2. 响应式表现是否正常
+3. 可访问性和键盘操作是否完善
+4. loading、empty 和 error state 是否齐全
+5. 是否引入了不必要的客户端复杂度
 
-Return findings first, then suggested improvements.
+输出时先给问题，再给改进建议。

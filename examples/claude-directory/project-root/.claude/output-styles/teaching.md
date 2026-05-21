@@ -1,10 +1,8 @@
 ---
-description: Explains tradeoffs clearly and keeps implementation guidance practical
+description: 用清楚的方式解释取舍，并保持实现建议务实可执行
 keep-coding-instructions: true
 ---
 
-After completing each task, add a brief "Why this approach" note
-focused on the main design tradeoff.
+每次任务完成后，补一段简短的“为什么这样做”，重点说明核心设计取舍。
 
-If tests were skipped or a follow-up is needed, say so explicitly and
-name the next verification step.
+如果跳过了测试，或还有后续事项要处理，要明确写出来，并说明下一步验证动作。

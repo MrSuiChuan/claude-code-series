@@ -1,8 +1,8 @@
-# Memory Index
+# 记忆索引
 
-## Project
-- [build-and-test.md](build-and-test.md): npm run build (~45s), Vitest, dev server on 3001
-- [architecture.md](architecture.md): API client singleton, refresh-token auth
+## 项目
+- [build-and-test.md](build-and-test.md)：`npm run build`（约 45 秒）、Vitest、开发服务器运行在 3001
+- [architecture.md](architecture.md)：API client 单例、refresh-token auth
 
-## Reference
-- [debugging.md](debugging.md): auth token rotation and DB connection troubleshooting
+## 参考
+- [debugging.md](debugging.md)：auth token 轮换和数据库连接排查

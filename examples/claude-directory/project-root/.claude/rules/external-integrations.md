@@ -4,10 +4,10 @@ paths:
   - "src/api/**/*.tsx"
 ---
 
-# External Integration Rules
+# 外部集成规则
 
-- Wrap third-party APIs behind small typed clients or adapters.
-- Normalize vendor-specific response shapes before passing data into `src/lib` or UI code.
-- Keep retries, timeouts, auth headers, and backoff policies near the integration boundary.
-- Handle non-2xx responses, partial failures, and rate limiting explicitly.
-- Avoid scattering raw `fetch` calls to the same external service across multiple modules.
+- 第三方 API 要包在职责清晰、类型明确的 client 或 adapter 后面。
+- 厂商特定的响应结构进入 `src/lib` 或 UI 代码前，先做统一整理。
+- 重试、超时、auth header 和退避策略尽量收在集成边界附近。
+- 非 2xx 响应、部分失败和限流场景都要显式处理。
+- 不要把同一个外部服务的原始 `fetch` 调用分散到多个模块里。

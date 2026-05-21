@@ -1,7 +1,7 @@
-# External Integration Rules
+# 外部集成规则
 
-- Use `src/api` for third-party API clients, SDK wrappers, and integration adapters.
-- Normalize external response shapes before they spread into the rest of the app.
-- Keep retries, timeouts, auth headers, and rate-limit handling close to the integration boundary.
-- Log failures with enough context to debug them, but never leak tokens, secrets, or raw credentials.
-- Avoid scattering duplicate fetch logic for the same external service across pages and components.
+- `src/api` 专门放第三方 API client、SDK 封装和集成适配层。
+- 外部返回结构进入项目其他区域前，先做统一整理和转换。
+- 重试、超时、auth header 和限流处理都尽量收在集成边界附近。
+- 记录失败日志时要保留足够上下文，但不能泄露 token、secret 或原始凭据。
+- 同一个外部服务的请求逻辑不要散落在多个页面和组件里重复实现。

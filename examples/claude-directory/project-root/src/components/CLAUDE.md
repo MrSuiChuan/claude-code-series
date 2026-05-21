@@ -1,7 +1,7 @@
-# Component Rules
+# 组件规则
 
-- Components should focus on presentation and interaction, not hidden business logic.
-- Prefer composition over large prop-heavy components.
-- Reuse the existing design system, shared UI primitives, and tokens before adding one-off styling.
-- Keep accessibility visible: labels, keyboard access, focus states, semantics, and ARIA only where needed.
-- If a component becomes stateful and complex, split view and state orchestration.
+- 组件应聚焦在展示和交互，不要隐藏关键业务逻辑。
+- 优先使用组合，而不是堆出一个 props 很重的大组件。
+- 在新增一次性样式之前，先复用现有设计系统、共享 UI 基础组件和 token。
+- 可访问性要保持可见，包括 label、键盘操作、focus 状态、语义标签，以及仅在需要时使用 ARIA。
+- 如果组件状态越来越多、逻辑越来越复杂，就把视图和状态编排拆开。

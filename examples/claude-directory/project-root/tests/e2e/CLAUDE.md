@@ -1,7 +1,7 @@
-# E2E Test Rules
+# E2E 测试规则
 
-- Prefer stable selectors such as roles, labels, and explicit test ids when needed.
-- Keep tests focused on user journeys, not implementation details.
-- Reuse fixtures and authenticated session setup where possible.
-- Make each test independent and safe to rerun.
-- When a flaky test appears, identify timing, network, or state leakage before adding waits.
+- 优先使用稳定的 selector，例如 role、label，以及在必要时显式添加的 test id。
+- 测试要聚焦用户链路，不要依赖实现细节。
+- 能复用的 fixture 和已登录会话初始化尽量复用。
+- 每条测试都应彼此独立，并且可以安全重复执行。
+- 遇到 flaky test 时，先查时间依赖、网络波动或状态泄漏，再考虑补等待。

@@ -5,10 +5,10 @@ paths:
   - "src/**/*db*.ts"
 ---
 
-# Database and Prisma Rules
+# 数据库与 Prisma 规则
 
-- Review schema changes, migrations, and seeds carefully before editing them.
-- Prefer additive migrations and explicit backfills over destructive rewrites.
-- Keep queries typed and narrow; select only what the caller needs.
-- Watch for transaction safety, N+1 issues, and missing indexes on new access paths.
-- Never hardcode credentials or connection strings.
+- 修改 schema、migration 和 seed 前要先认真评审。
+- 相比破坏性重写，优先做增量 migration 和明确的数据回填。
+- 查询要保持明确类型和收敛范围，只选择调用方真正需要的数据。
+- 新增访问路径时，要顺手检查事务安全、N+1 和缺失索引问题。
+- 不要硬编码凭据或连接串。

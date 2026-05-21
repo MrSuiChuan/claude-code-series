@@ -1,6 +1,6 @@
-# Global preferences
+# 全局偏好
 
-- Keep explanations concise
-- Use conventional commit format
-- Show the terminal command to verify changes
-- Prefer composition over inheritance
+- 说明尽量简洁
+- 提交信息使用 conventional commit 格式
+- 给出用于验证改动的终端命令
+- 优先使用组合，而不是继承

@@ -6,10 +6,10 @@ paths:
   - "src/**/*schema*.tsx"
 ---
 
-# Forms and Validation Rules
+# 表单与校验规则
 
-- Validate on the server even if the client already validates.
-- Keep form defaults, parsing, and submit behavior explicit.
-- Reuse schemas between client and server where practical.
-- Show actionable validation errors next to the relevant field.
-- Do not silently coerce invalid user input without a good reason.
+- 即使客户端已经做过校验，服务端仍然要再次校验。
+- form 的默认值、解析逻辑和提交行为都要写清楚。
+- 只要可行，客户端和服务端共享同一套 schema。
+- 校验错误要展示在对应字段附近，并让用户知道怎么修。
+- 没有充分理由时，不要静默纠正无效输入。

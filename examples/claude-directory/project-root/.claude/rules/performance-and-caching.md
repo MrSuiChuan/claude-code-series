@@ -5,10 +5,10 @@ paths:
   - "src/lib/**/*.{ts,tsx}"
 ---
 
-# Performance and Caching Rules
+# 性能与缓存规则
 
-- Avoid unnecessary client rendering when server rendering is sufficient.
-- Keep cache boundaries explicit for fetched data and expensive computation.
-- Watch for duplicate fetches, large bundle additions, and avoidable rerenders.
-- Defer non-critical work when it does not affect first paint.
-- Measure before adding complexity for micro-optimizations.
+- 当 server rendering 足够时，不要引入不必要的客户端渲染。
+- 数据获取和高成本计算的缓存边界要写清楚。
+- 注意重复 fetch、bundle 体积激增和可避免的 rerender。
+- 不影响首屏时，把非关键工作延后处理。
+- 在为了微优化增加复杂度前，先测量真实收益。

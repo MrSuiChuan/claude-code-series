@@ -1,16 +1,16 @@
 ---
-description: Reviews frontend implementation quality for a web application. Use when Claude should inspect a UI change for consistency, accessibility, responsive behavior, loading states, and unnecessary client complexity before or after implementation.
+description: 评审网页系统中的前端实现质量。适用于在实现前后检查 UI 改动的一致性、可访问性、响应式表现、loading state 和多余客户端复杂度的场景。
 argument-hint: <path-or-screen>
 ---
 
-Review the UI work for $ARGUMENTS.
+评审 $ARGUMENTS 的 UI 实现。
 
-Inspect:
+重点检查：
 
-1. Layout and visual consistency
-2. Responsiveness
-3. Accessibility and keyboard support
-4. Loading, empty, and error states
-5. Overuse of client components or duplicated view logic
+1. 布局和视觉一致性
+2. 响应式表现
+3. 可访问性和键盘支持
+4. loading、empty 和 error state
+5. client component 是否用得过多，或是否重复编排了视图逻辑
 
-Return findings first, with concrete fixes.
+输出时先给问题，并附带具体修复建议。

@@ -3,10 +3,10 @@ paths:
   - "src/**/*.{ts,tsx}"
 ---
 
-# Observability and Error Rules
+# 可观测性与错误处理规则
 
-- Errors should include enough context to debug without leaking secrets.
-- Prefer structured logging for server-side failures.
-- Keep user-facing errors understandable and non-technical.
-- Track important async and background failure paths explicitly.
-- When changing critical flows, check whether metrics, traces, or alerts should also change.
+- 错误信息要保留足够排查上下文，但不能泄露 secret。
+- 服务端失败日志优先使用结构化记录方式。
+- 面向用户的错误提示要能看懂，不要过于技术化。
+- 重要的异步和后台失败链路要明确追踪。
+- 改动关键流程时，也要检查 metrics、trace 和告警是否需要同步调整。

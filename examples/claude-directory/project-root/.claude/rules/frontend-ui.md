@@ -4,10 +4,10 @@ paths:
   - "src/components/**/*.tsx"
 ---
 
-# Frontend UI Rules
+# 前端 UI 规则
 
-- Reuse existing layout and UI primitives before creating new visual patterns.
-- Keep Tailwind class usage readable; extract repeated patterns into components or helpers.
-- Handle loading, empty, success, and error states explicitly.
-- Avoid leaking server-only logic into client components.
-- Preserve responsive behavior on desktop and mobile.
+- 在新增视觉模式前，先复用现有 layout 和 UI 基础组件。
+- Tailwind class 要保持可读，重复模式要提取到组件或 helper 中。
+- loading、empty、success 和 error state 都要显式处理。
+- 不要把只适用于服务端的逻辑泄露到 client component。
+- 同时兼顾桌面端和移动端的响应式表现。

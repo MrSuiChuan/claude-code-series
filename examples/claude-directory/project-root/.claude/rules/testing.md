@@ -6,10 +6,10 @@ paths:
   - "**/*.spec.tsx"
 ---
 
-# Testing Rules
+# 测试规则
 
-- Test names should describe the scenario and the expected outcome.
-- Prefer testing behavior over implementation details.
-- Mock external services before mocking internal modules.
-- Clean up side effects in `afterEach`.
-- When fixing a bug, add the smallest regression test that proves the fix.
+- 测试名称要能描述场景和预期结果。
+- 优先测试行为，而不是实现细节。
+- 优先 mock 外部服务，再考虑 mock 内部模块。
+- 在 `afterEach` 中清理副作用。
+- 修复 bug 时，补上能证明修复生效的最小回归测试。

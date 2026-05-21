@@ -5,7 +5,7 @@
 - `tooling/`：安装、更新、卸载、诊断、自检等生命周期脚本
 - `examples/claude-directory/`：按 `claude-directory` 结构整理的配置样例，方便直接参考或二次改造
 
-当前 `examples/claude-directory/project-root/` 已按网页系统开发场景补成一套可落地模板，默认假设技术栈为：
+当前 `examples/claude-directory/project-root/` 已按网页系统开发场景补成一套可直接复用的模板，默认技术栈为：
 
 - `React`
 - `Next.js App Router`

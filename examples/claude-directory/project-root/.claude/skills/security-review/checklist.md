@@ -1,19 +1,19 @@
-# Security Review Checklist
+# 安全评审清单
 
-## Input Validation
-- [ ] Untrusted input validated before queries, command execution, or template rendering
-- [ ] File upload type, size, and storage path validated
-- [ ] Path traversal prevented on file operations and download endpoints
+## 输入校验
+- [ ] 不可信输入在进入查询、命令执行或模板渲染前已经完成校验
+- [ ] 文件上传的类型、大小和存储路径已经校验
+- [ ] 文件操作和下载接口已防止路径穿越
 
-## Authentication
-- [ ] Session or token expiry, refresh, and revocation behavior reviewed
-- [ ] API keys and service credentials stored outside source control
-- [ ] Passwords or secrets stored with a modern approved hashing or secret-management approach
+## 认证
+- [ ] session 或 token 的过期、刷新和撤销逻辑已经检查
+- [ ] API key 和服务凭据没有进入源码仓库
+- [ ] 密码或 secret 使用了现代、合规的哈希或 secret 管理方式
 
-## Authorization
-- [ ] Resource ownership and tenant boundaries enforced on read and write paths
-- [ ] Privileged actions checked explicitly at the request boundary
+## 授权
+- [ ] 读写链路已经正确校验资源归属和租户边界
+- [ ] 高权限操作在请求边界上有显式检查
 
-## Browser Security
-- [ ] Sensitive mutations reviewed for CSRF, redirect, and origin-handling risks
-- [ ] User-controlled HTML, Markdown, or rich text reviewed for XSS exposure
+## 浏览器安全
+- [ ] 敏感写操作已经检查 CSRF、redirect 和 origin 处理风险
+- [ ] 用户可控的 HTML、Markdown 或富文本内容已经检查 XSS 风险

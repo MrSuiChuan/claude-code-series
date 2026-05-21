@@ -4,10 +4,10 @@ paths:
   - "tests/e2e/**/*.tsx"
 ---
 
-# E2E Testing Rules
+# E2E 测试规则
 
-- Prefer user-visible selectors before test ids.
-- Keep flows resilient to timing and minor UI changes.
-- Reuse fixtures, auth setup, and helpers to reduce duplication.
-- Avoid broad sleeps; wait on stable signals.
-- Record the failing scenario clearly when adding a regression test.
+- 优先使用用户可见的 selector，再考虑 test id。
+- 测试流程要能承受时间波动和轻微 UI 改动。
+- 复用 fixture、auth 初始化和 helper，减少重复。
+- 避免大范围 sleep，尽量等待稳定信号。
+- 新增回归测试时，要把失败场景写清楚。

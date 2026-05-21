@@ -1,7 +1,7 @@
-# App Router Rules
+# App Router 规则
 
-- Prefer server components by default.
-- Add `"use client"` only when state, effects, browser APIs, or interactive handlers are required.
-- Keep route segments small and move reusable logic into `src/lib`.
-- Handle loading, empty, and error states explicitly for user-facing pages.
-- Keep server actions thin and validate inputs before mutating data.
+- 默认优先使用 server component。
+- 只有在确实需要 state、effect、浏览器 API 或交互事件时才加 `"use client"`。
+- route segment 要保持小而清晰，可复用逻辑移到 `src/lib`。
+- 面向用户的页面要明确处理 loading、empty 和 error state。
+- server action 要保持轻量，并在修改数据前先完成输入校验。

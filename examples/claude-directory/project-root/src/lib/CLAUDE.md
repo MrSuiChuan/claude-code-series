@@ -1,7 +1,7 @@
-# Shared Logic Rules
+# 共享逻辑规则
 
-- Shared utilities should be deterministic and easy to test.
-- Keep domain logic here instead of spreading it across pages and components.
-- Prefer pure functions where possible.
-- Do not import client-only code into shared server utilities.
-- External service clients should be wrapped behind narrow functions or modules.
+- 共享工具函数要尽量保持确定性，并且容易测试。
+- 领域逻辑尽量集中放在这里，不要分散到页面和组件中。
+- 能写成纯函数时，优先写成纯函数。
+- 不要把只适用于客户端的代码引入共享服务端工具。
+- 外部服务 client 要包在职责清晰、边界收敛的函数或模块后面。

@@ -1,7 +1,7 @@
-# Database Rules
+# 数据库规则
 
-- Treat schema changes, migrations, and seeds as review-sensitive changes.
-- Prefer additive and reversible migrations when possible.
-- Avoid destructive migration steps unless the task explicitly requires them.
-- Keep database access through Prisma typed and scoped to the smallest useful query.
-- Check for N+1 patterns, missing indexes, and transaction boundaries when changing data flows.
+- schema、migration 和 seed 的改动都按高风险改动来评审。
+- 能做增量迁移时，优先做可回滚、可恢复的迁移。
+- 除非任务明确要求，否则避免破坏性 migration。
+- 通过 Prisma 访问数据库时，要保持类型清晰，并把查询范围收敛到最小。
+- 调整数据流时，要顺手检查 N+1、缺失索引和事务边界问题。
