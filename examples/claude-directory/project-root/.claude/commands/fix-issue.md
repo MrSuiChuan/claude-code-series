@@ -4,9 +4,13 @@ argument-hint: <issue-number>
 
 !`gh issue view $ARGUMENTS`
 
-处理上面的 issue，并完成以下工作：
+Investigate and fix the issue above.
 
-1. 找到问题根因
-2. 实现修复
-3. 补充或更新测试
-4. 说明改动内容和原因
+Workflow:
+
+1. Summarize the user-facing bug
+2. Trace the root cause in the codebase
+3. Propose the smallest safe fix
+4. Implement the fix
+5. Add or update regression tests
+6. Summarize what changed and any residual risk

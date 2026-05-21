@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(docker *)"
+      "Bash(docker *)",
+      "Bash(docker compose *)",
+      "Bash(psql *)",
+      "Bash(npx playwright test *)"
     ]
   }
 }

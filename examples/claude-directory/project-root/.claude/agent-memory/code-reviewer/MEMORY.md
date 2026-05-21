@@ -1,10 +1,13 @@
 # code-reviewer memory
 
-## 已知约定
-- 项目使用自定义 `Result<T, E>`，不用异常流作为主返回方式
-- 认证中间件从 `Authorization` 头读取 `Bearer token`
-- 测试数据通过 `test/factories/` 里的工厂函数生成
+## Project patterns seen
+- Server components are preferred unless interactivity requires `"use client"`
+- Route handlers validate input before business logic
+- Shared domain logic lives in `src/lib`
+- Prisma access should stay typed and narrowly scoped
 
-## 高频问题
-- `src/api/*` 下经常缺少空值判断
-- 后台任务里偶尔会漏掉 Promise 异常处理
+## Recurring issues
+- Missing loading or empty states on new screens
+- Inconsistent error payloads across API routes
+- Auth checks placed too late in request handlers
+- Tests that miss regression coverage for edge cases

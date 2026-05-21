@@ -2,9 +2,23 @@
   "mcpServers": {
     "github": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
       "env": {
         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "postgres-readonly": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${DATABASE_URL}"
+      ],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
       }
     }
   }

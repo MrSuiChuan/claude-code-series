@@ -1,11 +1,41 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm test *)",
-      "Bash(npm run *)"
+      "Bash(pnpm install)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test -- *)",
+      "Bash(pnpm test:e2e)",
+      "Bash(pnpm build)",
+      "Bash(pnpm prisma generate)",
+      "Bash(pnpm prisma migrate dev)",
+      "Bash(pnpm prisma db seed)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(gh pr view *)"
+    ],
+    "ask": [
+      "Bash(pnpm add *)",
+      "Bash(pnpm remove *)",
+      "Bash(pnpm dlx *)",
+      "Bash(npx *)",
+      "Bash(git push *)"
     ],
     "deny": [
-      "Bash(rm -rf *)"
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)"
+    ]
+  },
+  "worktree": {
+    "baseRef": "fresh",
+    "symlinkDirectories": [
+      "node_modules"
     ]
   },
   "hooks": {
@@ -15,7 +45,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write"
+            "command": "node .claude/hooks/format-edited-file.mjs",
+            "timeout": 20
           }
         ]
       }
