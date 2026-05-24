@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "enabled": true,
+  "events": {
+    "formatEditedFile": {
+      "enabled": true,
+      "description": "Format supported files after Claude edits them.",
+      "command": "node .claude/hooks/format-edited-file.mjs"
+    }
+  }
+}
