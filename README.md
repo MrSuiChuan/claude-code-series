@@ -3,7 +3,7 @@
 这个仓库用于沉淀 Claude Code 相关的可复用脚本和项目级配置模板，重点解决两类实际问题：
 
 - Claude Code 的安装、更新、卸载、诊断和迁移不够顺手
-- 项目里想把 `CLAUDE.md`、`.claude/`、rules、commands、skills 这些配置真正落下来，但缺少一套能直接改的参考模板
+- 项目里想把 `CLAUDE.md`、`.claude/`、rules、commands、skills 这些配置真正落下来，但缺少一套能直接改、能解释清楚、还能演示 workflow 的参考模板
 
 仓库只放脚本、配置和样例文件，不放文章正文、翻译文档、公众号草稿，也不提交本机私有 skill。
 
@@ -13,7 +13,7 @@
   Claude Code 生命周期管理脚本，覆盖安装、更新、卸载、状态检查、诊断、自检、迁移和报告生成
 
 - `claude-directory/`
-  按 `claude-directory` 结构整理的项目级配置样例，当前保留一套面向网页系统开发的 `project-root/` 模板
+  一套面向网页系统项目的 Claude Code 工程化模板，不只包含 `project-root/` 配置样例，也补了 `docs/` 说明层、`workflows/` 示例层，以及更完整的 command / skill / agent / hooks 组织方式
 
 ## 先看哪里
 
@@ -26,10 +26,21 @@
 
 - 先看 [claude-directory/README.md](./claude-directory/README.md)
 - 模板主体在 [claude-directory/project-root](./claude-directory/project-root)
+- 结构说明在 [claude-directory/docs](./claude-directory/docs)
+- workflow 示例在 [claude-directory/workflows](./claude-directory/workflows)
 
 ## 当前模板定位
 
-`claude-directory/project-root/` 现在是一套面向网页系统开发的项目级模板，默认技术栈为：
+`claude-directory/` 现在不只是一个 `.claude` 目录样例，而是一套更完整的项目模板，包含三层内容：
+
+- `project-root/`
+  可直接复制进业务仓库的项目级模板
+- `docs/`
+  解释 `CLAUDE.md`、rules、commands、skills、agents、memory、settings、hooks 应该如何分工
+- `workflows/`
+  演示页面交付、接口交付、bug 修复等高频任务该如何把 command、skill、agent 串成稳定流程
+
+其中 `project-root/` 这套模板当前默认面向网页系统开发，示例技术栈为：
 
 - `React`
 - `Next.js App Router`
@@ -46,6 +57,7 @@
 - 项目级 `CLAUDE.md`
 - `.claude/rules/`
 - `.claude/commands/`
+- `.claude/commands/workflows/`
 - `.claude/skills/`
 - `.claude/agents/`
 - `.claude/agent-memory/`
@@ -89,9 +101,16 @@ bash install_claude_code.sh doctor
 
 建议从这里开始看：
 
+- [claude-directory/README.md](./claude-directory/README.md)
 - [claude-directory/project-root/CLAUDE.md](./claude-directory/project-root/CLAUDE.md)
 - [claude-directory/project-root/.claude/settings.json](./claude-directory/project-root/.claude/settings.json)
 - [claude-directory/project-root/.claude/rules](./claude-directory/project-root/.claude/rules)
+
+如果想先理解结构，再动手复制，推荐按这个顺序继续读：
+
+1. [claude-directory/docs/commands-vs-agents-vs-skills.md](./claude-directory/docs/commands-vs-agents-vs-skills.md)
+2. [claude-directory/docs/architecture-overview.md](./claude-directory/docs/architecture-overview.md)
+3. [claude-directory/workflows/page-shipping-workflow.md](./claude-directory/workflows/page-shipping-workflow.md)
 
 落地时通常只需要做三件事：
 
@@ -109,7 +128,7 @@ bash install_claude_code.sh doctor
 ## 说明
 
 - `tooling/` 偏执行和运维
-- `claude-directory/` 偏项目规范和配置落地
+- `claude-directory/` 偏项目规范、目录设计和 workflow 落地
 - 两部分可以单独使用，也可以配合使用
 
-如果你只是想快速上手，优先从 `tooling/README.md` 和 `claude-directory/README.md` 这两个入口开始。
+如果你只是想快速上手，优先从 [tooling/README.md](./tooling/README.md) 和 [claude-directory/README.md](./claude-directory/README.md) 这两个入口开始。
