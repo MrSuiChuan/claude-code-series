@@ -10,15 +10,16 @@ argument-hint: <route-or-screen-name>
 执行流程：
 
 1. 先看附近已有实现：
-   - 相邻 route 和 layout 的结构
+   - `apps/web` 中相邻页面和 layout 的结构
    - 现有页面的视觉模式
    - 已有基础组件和组合方式
    - 数据获取和状态处理的惯例
+   - 是否已经有对应的共享契约和 API client
 
 2. 调用 `scaffold-page` skill，构建页面或 route segment：
-   - 默认优先使用 server component
    - 复用现有 UI 基础组件和布局模式
-   - 共享逻辑提取到可复用组件或 `src/lib`
+   - 数据请求优先走统一 API client 和共享契约
+   - 共享逻辑提取到可复用组件或前端共享模块
    - 不为单个页面发明新的架构层
 
 3. 检查页面状态完整性：
@@ -30,7 +31,7 @@ argument-hint: <route-or-screen-name>
 4. 检查实现复杂度：
    - 是否引入了不必要的 client component
    - 是否重复编排了已有视图逻辑
-   - 是否把只适合服务端的逻辑放进了客户端组件
+   - 是否把只适合后端的逻辑放进了前端组件
 
 5. 调用 `ui-review` skill，重点检查：
    - 布局和视觉一致性

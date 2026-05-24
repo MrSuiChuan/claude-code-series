@@ -17,8 +17,9 @@ argument-hint: <bug-summary>
 
 2. 查看附近实现，确认最可能的入口：
    - 前端页面、组件、交互入口
-   - route handler、server action、API route
-   - `src/lib`、数据库访问层、第三方集成层
+   - `packages/contracts` 中相关契约
+   - `apps/api` 中 route handler、service 和 API 入口
+   - 数据库访问层、第三方集成层
    - 测试或日志里已有的相关线索
 
 3. 调用 `bug-triage` skill，完成初步问题收敛：

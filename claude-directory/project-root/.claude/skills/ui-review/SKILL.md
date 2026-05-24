@@ -1,5 +1,5 @@
 ---
-description: 评审网页系统中的前端实现质量。适用于在实现前后检查 UI 改动的一致性、可访问性、响应式表现、loading state 和多余客户端复杂度的场景。
+description: 评审 `apps/web` 中的前端实现质量。适用于在实现前后检查 UI 改动的一致性、可访问性、响应式表现、loading state 和多余客户端复杂度的场景。
 argument-hint: <path-or-screen>
 ---
 

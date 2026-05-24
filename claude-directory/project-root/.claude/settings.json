@@ -3,15 +3,17 @@
     "allow": [
       "Bash(pnpm install)",
       "Bash(pnpm dev)",
+      "Bash(pnpm --filter web dev)",
+      "Bash(pnpm --filter api dev)",
       "Bash(pnpm lint)",
       "Bash(pnpm typecheck)",
       "Bash(pnpm test)",
       "Bash(pnpm test -- *)",
       "Bash(pnpm test:e2e)",
       "Bash(pnpm build)",
-      "Bash(pnpm prisma generate)",
-      "Bash(pnpm prisma migrate dev)",
-      "Bash(pnpm prisma db seed)",
+      "Bash(pnpm --filter api prisma generate)",
+      "Bash(pnpm --filter api prisma migrate dev)",
+      "Bash(pnpm --filter api prisma db seed)",
       "Bash(git status)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -33,7 +35,7 @@
     ]
   },
   "worktree": {
-    "baseRef": "fresh",
+    "baseRef": "main",
     "symlinkDirectories": [
       "node_modules"
     ]

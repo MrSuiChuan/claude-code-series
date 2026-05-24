@@ -1,9 +1,11 @@
 ---
 paths:
-  - "src/**/*form*.tsx"
-  - "src/**/*Form*.tsx"
-  - "src/**/*schema*.ts"
-  - "src/**/*schema*.tsx"
+  - "apps/web/src/**/*form*.tsx"
+  - "apps/web/src/**/*Form*.tsx"
+  - "apps/api/src/**/*schema*.ts"
+  - "apps/api/src/**/*schema*.tsx"
+  - "packages/contracts/**/*.ts"
+  - "packages/contracts/**/*.tsx"
 ---
 
 # 表单与校验规则

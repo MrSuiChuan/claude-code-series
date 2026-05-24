@@ -107,6 +107,12 @@
 - `scaffold-page` 和 `ui-review` 作为 `skills`
 - `accessibility-reviewer` 作为 `agent`
 
+如果这是一个前后端分离 monorepo 里的页面需求，`command` 还可以继续编排：
+
+- 在 `apps/web` 搭建页面和状态
+- 在 `packages/contracts` 对齐请求 / 响应契约
+- 必要时联动 `apps/api` 补接口或补字段
+
 也就是说：
 
 - `command` 负责编排
@@ -117,10 +123,11 @@
 
 ### Commands
 
-建议放“任务入口”和“工作流入口”：
+建议放“任务入口”和“工作流入口”，尤其是跨 `apps/web`、`apps/api`、`packages/contracts` 的编排：
 
-- 新增页面
-- 新增接口
+- 新增前端页面
+- 新增后端接口
+- 跟进一次契约变更
 - 修复问题
 - 评审 UI
 - 跟踪请求链路
@@ -129,18 +136,19 @@
 
 建议放“角色化评审”和“稳定分析视角”：
 
-- 前端评审
-- 后端评审
+- 前端评审（重点看 `apps/web`）
+- 后端评审（重点看 `apps/api`）
 - 可访问性评审
-- E2E 评审
+- E2E 评审（重点看 `tests/e2e` 是否覆盖关键链路）
 - 通用代码评审
 
 ### Skills
 
 建议放“中等粒度、可复用的任务模板”：
 
-- 页面搭建
-- API 脚手架
+- 页面搭建（主要落到 `apps/web`）
+- API 脚手架（主要落到 `apps/api`）
+- 契约收边（主要落到 `packages/contracts`）
 - bug 收敛
 - 安全检查
 - 数据库变更评审

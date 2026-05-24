@@ -12,4 +12,4 @@ config/secrets.json
 playwright/.auth
 
 # Local database artifacts if the project uses them
-prisma/dev.db
+apps/api/prisma/dev.db

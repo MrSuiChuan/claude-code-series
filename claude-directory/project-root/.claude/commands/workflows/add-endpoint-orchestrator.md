@@ -10,14 +10,16 @@ argument-hint: <route-or-action-name>
 执行流程：
 
 1. 先查看附近已有实现：
-   - 相邻 route handler 或 server action
+   - `apps/api` 中相邻 route handler 或控制器入口
    - 输入校验和返回结构的既有模式
    - 认证、授权、限流、中间层复用方式
-   - 领域逻辑是否已存在于 `src/lib` 或服务层
+   - 领域逻辑是否已存在于服务层
+   - 是否已经有可复用的 `packages/contracts` 契约
 
 2. 调用 `scaffold-api-route` skill，完成接口骨架设计：
    - 确认正确的 route 或 action 位置
    - 定义请求和响应结构
+   - 尽量复用或新增 `packages/contracts` 中的共享契约
    - 校验所有不可信输入
    - 尽量把业务逻辑放在可复用层，而不是直接堆在入口文件
 
@@ -40,6 +42,7 @@ argument-hint: <route-or-action-name>
 
 7. 输出交付总结：
    - 入口文件和核心逻辑位置
+   - 契约定义位置
    - 请求与响应结构摘要
    - 需要补充的测试
    - 风险点、权限点和未验证项

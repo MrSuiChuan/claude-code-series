@@ -1,7 +1,6 @@
 ---
 paths:
-  - "src/app/**/*.tsx"
-  - "src/components/**/*.tsx"
+  - "apps/web/src/**/*.tsx"
 ---
 
 # 可访问性规则

@@ -66,9 +66,10 @@
 
 例如：
 
-- `pnpm lint`
-- `pnpm typecheck`
-- `pnpm test`
+- `pnpm --filter web lint`
+- `pnpm --filter api typecheck`
+- `pnpm --filter contracts test`
+- `pnpm -r test`
 - `git status`
 - `git diff *`
 
@@ -112,6 +113,7 @@ worktree 配置主要解决两个问题：
 - 哪些目录或依赖需要复用或特殊处理
 
 在样例里，`node_modules` 被作为 `symlinkDirectories` 使用，就是在减少重复安装成本。
+对于这个前后端分离模板，`.worktreeinclude` 还可以顺手复制一些本地运行必需但不进版本库的文件，例如 `apps/api/prisma/dev.db`。
 
 如果团队真的会依赖 worktree，建议同时维护：
 
@@ -127,6 +129,7 @@ hooks 的目标不是制造“魔法”，而是把那些重复、机械、稳�
 典型场景包括：
 
 - 编辑后自动格式化
+- 只针对 `apps/web` 或 `apps/api` 下的变更触发对应工具链
 - 会话开始时加载项目上下文
 - 特定文件变化后提醒重新检查环境变量
 - 任务结束后输出统一提示

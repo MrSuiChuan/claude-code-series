@@ -6,9 +6,9 @@ argument-hint: <user-action-or-endpoint>
 
 需要包含：
 
-1. UI 或 route 层的入口位置
-2. 校验和 auth 检查
-3. service 或领域逻辑
-4. 数据库读写路径
-5. 错误处理和日志记录
-6. 覆盖这条链路的测试
+1. `apps/web` 中的页面、组件或交互入口
+2. `packages/contracts` 中涉及的请求或响应契约
+3. `apps/api` 中的校验、auth 和 handler 入口
+4. service、领域逻辑和第三方集成路径
+5. 数据库读写路径
+6. 错误处理、日志记录和覆盖这条链路的测试

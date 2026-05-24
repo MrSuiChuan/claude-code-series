@@ -1,7 +1,8 @@
 ---
 paths:
-  - "src/**/*.{ts,tsx}"
-  - "prisma/**/*"
+  - "apps/**/*.{ts,tsx}"
+  - "apps/api/prisma/**/*"
+  - "packages/contracts/**/*.{ts,tsx}"
   - ".env*"
 ---
 

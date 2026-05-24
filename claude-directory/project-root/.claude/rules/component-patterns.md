@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/components/**/*.tsx"
+  - "apps/web/src/**/*.tsx"
 ---
 
 # 组件模式规则

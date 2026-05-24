@@ -1,8 +1,8 @@
 ---
 paths:
-  - "prisma/**/*"
-  - "src/**/*prisma*.ts"
-  - "src/**/*db*.ts"
+  - "apps/api/prisma/**/*"
+  - "apps/api/src/**/*prisma*.ts"
+  - "apps/api/src/**/*db*.ts"
 ---
 
 # 数据库与 Prisma 规则

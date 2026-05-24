@@ -3,9 +3,9 @@
 ## 已观察到的项目模式
 - UI 在新增视觉模式前，应先复用共享基础组件
 - 可访问性问题常出现在 dialog、表单和自定义按钮上
-- 可以使用 Tailwind class，但重复模式应提取到组件中
+- 页面取数优先复用统一 API client 和共享契约，而不是在页面里临时拼请求
 
 ## 高频问题
-- 明明 server component 足够，却新增了 client component
+- 明明已有共享组件或页面模式，却重新造了一套视觉实现
 - 缺少 loading、empty 或 error state
 - 类似页面之间的响应式间距不一致

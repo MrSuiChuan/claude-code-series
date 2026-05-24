@@ -34,6 +34,7 @@
 
 - 项目是什么
 - 技术栈和主要边界
+- monorepo 分层，例如 `apps/web`、`apps/api`、`packages/contracts`、`tests/e2e` 分别负责什么
 - 工作方式原则
 - 常用命令
 - 编码和测试总规则
@@ -59,6 +60,7 @@
 
 - 前端 UI 规则
 - API 设计规则
+- 共享契约规则
 - 表单和校验规则
 - Prisma 和数据库规则
 - 性能和缓存规则
@@ -101,6 +103,12 @@
 - 兼顾移动端和桌面端
 - 不要把服务端逻辑泄露到 client component
 
+而共享契约规则里适合写：
+
+- `packages/contracts` 里统一维护 schema、DTO 和导出的类型
+- `apps/web` 和 `apps/api` 不各自复制一份请求 / 响应结构
+- 契约变更时同步检查前端调用和后端实现
+
 但不适合写：
 
 - “把这次订单页面做成左侧筛选右侧表格”
@@ -125,6 +133,7 @@
 
 - `frontend-reviewer` 记住这个项目经常缺 loading state
 - `backend-reviewer` 记住接口经常把权限判断漏在 service 层
+- `backend-reviewer` 记住这个仓库里契约升级后最容易漏改 `apps/api` 的返回结构
 - `e2e-reviewer` 记住几个关键链路最容易断在登录态或异步刷新
 
 ## 什么不应该放进 memory

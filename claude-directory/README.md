@@ -1,16 +1,15 @@
 # claude-directory
 
-一套面向网页系统项目的 Claude Code 工程化目录模板。
+一套面向前后端分离网页系统 monorepo 的 Claude Code 工程化目录模板。
 
 它的目标不是只给你几个 prompt，而是给你一套可维护的项目级结构，让 `CLAUDE.md`、`rules`、`commands`、`skills`、`agents`、`hooks`、`settings` 可以各司其职，长期演进。
 
 默认示例技术栈为：
 
 - React
-- Next.js App Router
 - TypeScript
+- Node.js
 - pnpm
-- Tailwind CSS
 - Zod
 - Prisma
 - Vitest
@@ -58,9 +57,7 @@
 
 如果你的项目不用：
 
-- `Next.js`
 - `Prisma`
-- `Tailwind`
 - `Playwright`
 
 那就同步删改相关规则、skill 和命令。
@@ -113,13 +110,35 @@ claude-directory/
         config/
         scripts/
       output-styles/
+    apps/
+      web/
+        CLAUDE.md
+        src/
+      api/
+        CLAUDE.md
+        src/
+        prisma/
+          CLAUDE.md
+    packages/
+      contracts/
+        CLAUDE.md
+    tests/
+      e2e/
+        CLAUDE.md
 ```
+
+其中这一套目录的默认职责是：
+
+- `apps/web/`：前端应用
+- `apps/api/`：后端接口和数据访问
+- `packages/contracts/`：前后端共享契约、schema 和类型
+- `tests/e2e/`：跨前后端关键链路回归测试
 
 ## 每一层是干什么的
 
 ### `CLAUDE.md`
 
-项目总约定。
+monorepo 总约定。
 
 适合放：
 
@@ -210,6 +229,37 @@ claude-directory/
 - worktree 配置
 - 团队统一接受的自动化行为
 
+### `apps/web/`
+
+前端应用。
+
+适合放：
+
+- 页面、路由、组件
+- 浏览器交互和状态编排
+- 面向用户的 UI 和 loading / empty / error state
+
+### `apps/api/`
+
+后端应用。
+
+适合放：
+
+- route handler 或控制器入口
+- 认证、授权、限流
+- 业务逻辑、数据访问、数据库迁移
+
+### `packages/contracts/`
+
+前后端共享契约层。
+
+适合放：
+
+- Zod schema
+- 请求和响应 DTO
+- 共享类型
+- 前后端都要依赖的接口约束
+
 ## 推荐工作流
 
 这个模板不只是提供单点命令，也推荐把高频任务组织成稳定 workflow。
@@ -269,30 +319,26 @@ claude-directory/
 
 这套模板默认偏网页系统，但结构本身是通用的。
 
-### 如果你不是 Next.js
+### 如果你的前端不是 React
 
-- 改掉 `src/app`、route handler、server action 相关表述
-- 把页面和接口 skill 改成你的框架惯例
+- 调整 `apps/web` 下的页面和组件约束
+- 把页面相关 skill 改成你的前端框架惯例
 
 ### 如果你不用 Prisma
 
 - 删除 `database-prisma.md`
 - 把数据库相关 skill 改成你的 ORM 或 SQL 方案
 
-### 如果你不用 Tailwind
-
-- 调整前端 UI 规则
-- 去掉与 Tailwind class 组织相关的内容
-
 ### 如果你没有 Playwright
 
 - 调整测试规则
 - 删除或弱化 `e2e-reviewer`
 
-### 如果你是后端或服务型项目
+### 如果你的后端不是 Node.js / TypeScript
 
-- 保留 `commands`、`rules`、`skills`、`agents` 的分层方式
-- 把页面类 workflow 换成接口、任务、数据处理类 workflow
+- 保留 `apps/api` 的边界设计
+- 改掉 route、service、repository、Prisma 相关表述
+- 把接口 skill 和后端规则切成你的技术栈惯例
 
 ## 设计原则
 
@@ -301,6 +347,7 @@ claude-directory/
 - 项目总约定和专题规则分开
 - 用户入口和复用套路分开
 - 专家角色和执行模板分开
+- 前后端职责边界清楚，契约层单独存在
 - 默认先复用现有实现模式
 - 改动尽量小、尽量集中、尽量可评审
 - 先让 workflow 稳定，再让配置复杂
@@ -312,6 +359,7 @@ claude-directory/
 - 想把 Claude Code 用成项目级工程工具的团队
 - 想让 `.claude` 目录长期可维护的人
 - 想把高频任务做成标准 workflow 的项目
+- 想找一套前后端分离网页系统参考模板的人
 
 不太适合：
 
