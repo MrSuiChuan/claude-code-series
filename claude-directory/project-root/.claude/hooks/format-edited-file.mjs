@@ -27,8 +27,8 @@ function isWithinProject(filePath, projectDir) {
 
 function runFormatter(filePath, cwd) {
   const candidates = process.platform === "win32"
-    ? [["pnpm.cmd", ["exec", "prettier", "--write", filePath]], ["npx.cmd", ["prettier", "--write", filePath]]]
-    : [["pnpm", ["exec", "prettier", "--write", filePath]], ["npx", ["prettier", "--write", filePath]]];
+    ? [["prettier.cmd", ["--write", filePath]]]
+    : [["prettier", ["--write", filePath]]];
 
   for (const [command, args] of candidates) {
     const result = spawnSync(command, args, {

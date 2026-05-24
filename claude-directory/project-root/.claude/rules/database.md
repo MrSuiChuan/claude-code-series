@@ -1,11 +1,11 @@
 ---
 paths:
-  - "apps/api/prisma/**/*"
-  - "apps/api/src/**/*prisma*.ts"
+  - "apps/api/database/**/*"
   - "apps/api/src/**/*db*.ts"
+  - "apps/api/src/**/*data*.ts"
 ---
 
-# 数据库与 Prisma 规则
+# 数据库与数据访问规则
 
 - 修改 schema、migration 和 seed 前要先认真评审。
 - 相比破坏性重写，优先做增量 migration 和明确的数据回填。

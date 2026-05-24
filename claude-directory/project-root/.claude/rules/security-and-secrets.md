@@ -1,7 +1,7 @@
 ---
 paths:
   - "apps/**/*.{ts,tsx}"
-  - "apps/api/prisma/**/*"
+  - "apps/api/database/**/*"
   - "packages/contracts/**/*.{ts,tsx}"
   - ".env*"
 ---

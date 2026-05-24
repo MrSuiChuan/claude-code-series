@@ -18,7 +18,7 @@ argument-hint: <bug-summary>
 2. 查看附近实现，确认最可能的入口：
    - 前端页面、组件、交互入口
    - `packages/contracts` 中相关契约
-   - `apps/api` 中 route handler、service 和 API 入口
+   - `apps/api` 中请求入口、业务模块和 API 入口
    - 数据库访问层、第三方集成层
    - 测试或日志里已有的相关线索
 

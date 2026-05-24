@@ -1,5 +1,5 @@
 ---
-description: 评审数据库 schema 或 migration 改动的安全性和可运维性。适用于检查 Prisma schema 变更、自动生成的 migration、数据回填或 seed 调整中的破坏性步骤、事务风险和上线风险。
+description: 评审数据库结构定义或 migration 改动的安全性和可运维性。适用于检查数据库结构变更、自动生成的 migration、数据回填或 seed 调整中的破坏性步骤、事务风险和上线风险。
 argument-hint: <migration-or-schema-path>
 ---
 

@@ -2,9 +2,9 @@
 
 ## 已观察到的项目模式
 - 前端和后端职责边界比较清楚，跨层改动时应先确认是否真的需要同时动 `apps/web`、`packages/contracts` 和 `apps/api`
-- route handler 会在进入业务逻辑前完成输入校验
+- 请求入口会在进入业务逻辑前完成输入校验
 - 共享契约集中放在 `packages/contracts`
-- Prisma 访问需要保持明确类型和收敛查询范围
+- 数据访问需要保持明确类型和收敛查询范围
 
 ## 高频问题
 - 新页面缺少 loading 或 empty state

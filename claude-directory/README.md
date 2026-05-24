@@ -4,18 +4,9 @@
 
 它的目标不是只给你几个 prompt，而是给你一套可维护的项目级结构，让 `CLAUDE.md`、`rules`、`commands`、`skills`、`agents`、`hooks`、`settings` 可以各司其职，长期演进。
 
-默认示例技术栈为：
+它强调的是目录结构、职责边界和工作流分层，不强绑定某一套默认技术栈。
 
-- React
-- TypeScript
-- Node.js
-- pnpm
-- Zod
-- Prisma
-- Vitest
-- Playwright
-
-如果你的项目不是这套栈，也可以直接借用目录结构和分工方式，再按自己的实际情况删改内容。
+仓库里的 rules、commands 和 skills 会围绕前端、后端、共享契约、数据访问和测试这些常见工程问题来组织，你可以直接替换成自己的框架、语言、校验机制和测试工具。
 
 ## 这个目录解决什么问题
 
@@ -55,12 +46,7 @@
 - `.mcp.json`
 - `.worktreeinclude`
 
-如果你的项目不用：
-
-- `Prisma`
-- `Playwright`
-
-那就同步删改相关规则、skill 和命令。
+如果你的项目边界、工具链或目录命名和这里不同，就同步删改相关规则、skill、命令和路径约定。
 
 ### 3. 先跑通一个 workflow
 
@@ -117,7 +103,7 @@ claude-directory/
       api/
         CLAUDE.md
         src/
-        prisma/
+        database/
           CLAUDE.md
     packages/
       contracts/
@@ -131,7 +117,7 @@ claude-directory/
 
 - `apps/web/`：前端应用
 - `apps/api/`：后端接口和数据访问
-- `packages/contracts/`：前后端共享契约、schema 和类型
+- `packages/contracts/`：前后端共享契约、结构定义和类型
 - `tests/e2e/`：跨前后端关键链路回归测试
 
 ## 每一层是干什么的
@@ -245,7 +231,7 @@ monorepo 总约定。
 
 适合放：
 
-- route handler 或控制器入口
+- 请求入口或接口入口
 - 认证、授权、限流
 - 业务逻辑、数据访问、数据库迁移
 
@@ -255,7 +241,7 @@ monorepo 总约定。
 
 适合放：
 
-- Zod schema
+- 契约 schema 或结构定义
 - 请求和响应 DTO
 - 共享类型
 - 前后端都要依赖的接口约束
@@ -315,30 +301,30 @@ monorepo 总约定。
 4. [`docs/settings-and-hooks.md`](./docs/settings-and-hooks.md)
 5. [`workflows/page-shipping-workflow.md`](./workflows/page-shipping-workflow.md)
 
-## 如何按技术栈裁剪
+## 如何按项目结构裁剪
 
-这套模板默认偏网页系统，但结构本身是通用的。
+这套模板偏网页系统，但结构本身是通用的。
 
-### 如果你的前端不是 React
+### 如果你的前端目录边界不同
 
 - 调整 `apps/web` 下的页面和组件约束
-- 把页面相关 skill 改成你的前端框架惯例
+- 把页面相关 skill 改成你的前端工程惯例
 
-### 如果你不用 Prisma
+### 如果你的数据访问层结构不同
 
-- 删除 `database-prisma.md`
-- 把数据库相关 skill 改成你的 ORM 或 SQL 方案
+- 调整 `apps/api/database` 和 `database.md` 的路径约定
+- 把数据库相关 skill 改成你的数据访问与迁移流程
 
-### 如果你没有 Playwright
+### 如果你的端到端测试边界不同
 
 - 调整测试规则
 - 删除或弱化 `e2e-reviewer`
 
-### 如果你的后端不是 Node.js / TypeScript
+### 如果你的后端入口结构不同
 
 - 保留 `apps/api` 的边界设计
-- 改掉 route、service、repository、Prisma 相关表述
-- 把接口 skill 和后端规则切成你的技术栈惯例
+- 改掉请求入口、业务模块、数据访问层的具体命名
+- 把接口 skill 和后端规则切成你的项目惯例
 
 ## 设计原则
 

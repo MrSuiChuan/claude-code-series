@@ -40,16 +40,9 @@
 - `workflows/`
   演示页面交付、接口交付、bug 修复等高频任务该如何把 command、skill、agent 串成稳定流程
 
-其中 `project-root/` 这套模板当前默认面向前后端分离的网页系统 monorepo，示例技术栈为：
+其中 `project-root/` 这套模板面向前后端分离的网页系统 monorepo，重点提供目录分层、职责边界和 `.claude` 工程化组织方式，不强绑定某一套默认技术栈。
 
-- `React`
-- `TypeScript`
-- `Node.js`
-- `pnpm`
-- `Zod`
-- `Prisma`
-- `Vitest`
-- `Playwright`
+仓库里的 rules、commands 和 skills 会围绕前端、后端、共享契约、数据访问和测试这些常见工程问题来组织，不预设具体框架、语言、包管理器或测试工具。
 
 模板里已经补了这些内容：
 

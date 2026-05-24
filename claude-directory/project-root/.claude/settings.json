@@ -1,19 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm install)",
-      "Bash(pnpm dev)",
-      "Bash(pnpm --filter web dev)",
-      "Bash(pnpm --filter api dev)",
-      "Bash(pnpm lint)",
-      "Bash(pnpm typecheck)",
-      "Bash(pnpm test)",
-      "Bash(pnpm test -- *)",
-      "Bash(pnpm test:e2e)",
-      "Bash(pnpm build)",
-      "Bash(pnpm --filter api prisma generate)",
-      "Bash(pnpm --filter api prisma migrate dev)",
-      "Bash(pnpm --filter api prisma db seed)",
       "Bash(git status)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -21,10 +8,6 @@
       "Bash(gh pr view *)"
     ],
     "ask": [
-      "Bash(pnpm add *)",
-      "Bash(pnpm remove *)",
-      "Bash(pnpm dlx *)",
-      "Bash(npx *)",
       "Bash(git push *)"
     ],
     "deny": [
@@ -35,10 +18,7 @@
     ]
   },
   "worktree": {
-    "baseRef": "main",
-    "symlinkDirectories": [
-      "node_modules"
-    ]
+    "baseRef": "main"
   },
   "hooks": {
     "PostToolUse": [

@@ -54,7 +54,7 @@ project-root/
     api/
       CLAUDE.md
       src/
-      prisma/
+      database/
         CLAUDE.md
   packages/
     contracts/
@@ -94,7 +94,7 @@ Application Boundaries
 这四层的关系可以简单理解为：
 
 - `apps/web` 负责页面、交互和前端状态
-- `packages/contracts` 负责前后端共享的 schema、DTO 和类型
+- `packages/contracts` 负责前后端共享的结构定义、DTO 和类型
 - `apps/api` 负责接口、业务逻辑、权限和数据访问
 - `tests/e2e` 负责把关键用户链路按真实集成方式串起来验证
 
@@ -107,7 +107,7 @@ Application Boundaries
 它负责提供：
 
 - 项目是什么
-- 默认技术栈是什么
+- 主要技术边界是什么
 - 前端、后端、契约层怎么分
 - 工作方式和编码原则是什么
 - 测试和评审的大方向是什么
@@ -125,7 +125,7 @@ Application Boundaries
 - 前端 UI
 - API 设计
 - 表单和校验
-- 数据库和 Prisma
+- 数据库和数据访问
 - 共享契约
 - 测试
 - 安全
@@ -275,7 +275,7 @@ skill 的重点不是角色，而是方法：
 
 它不应该：
 
-- 在 handler 里堆满全部逻辑
+- 在请求入口里堆满全部逻辑
 - 与前端各自维护漂移的接口结构
 
 ## 第十一层：共享契约层
@@ -286,7 +286,7 @@ skill 的重点不是角色，而是方法：
 
 它负责：
 
-- Zod schema
+- 契约 schema 或结构定义
 - 共享 DTO
 - 请求和响应结构
 - 共享类型

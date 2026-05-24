@@ -1,5 +1,5 @@
 ---
-description: 为 `apps/web` 中的 React 前端创建或重构页面与页面级组合。适用于新增页面、布局、loading state 或页面编排，同时遵循项目既有 UI、契约和数据加载约定的场景。
+description: 为 `apps/web` 创建或重构页面与页面级组合。适用于新增页面、布局、loading state 或页面编排，同时遵循项目既有 UI、契约和数据加载约定的场景。
 argument-hint: <route-or-screen-name>
 ---
 

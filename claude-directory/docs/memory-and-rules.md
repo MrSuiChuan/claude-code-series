@@ -62,7 +62,7 @@
 - API 设计规则
 - 共享契约规则
 - 表单和校验规则
-- Prisma 和数据库规则
+- 数据库和数据访问规则
 - 性能和缓存规则
 - 测试规则
 - 安全和密钥规则
@@ -101,11 +101,11 @@
 - 先复用现有 layout 和基础组件
 - loading、empty、error state 要显式处理
 - 兼顾移动端和桌面端
-- 不要把服务端逻辑泄露到 client component
+- 不要把服务端逻辑泄露到前端交互层
 
 而共享契约规则里适合写：
 
-- `packages/contracts` 里统一维护 schema、DTO 和导出的类型
+- `packages/contracts` 里统一维护结构定义、DTO 和导出的类型
 - `apps/web` 和 `apps/api` 不各自复制一份请求 / 响应结构
 - 契约变更时同步检查前端调用和后端实现
 
@@ -132,7 +132,7 @@
 例如：
 
 - `frontend-reviewer` 记住这个项目经常缺 loading state
-- `backend-reviewer` 记住接口经常把权限判断漏在 service 层
+- `backend-reviewer` 记住接口经常把权限判断漏在业务模块边界之外
 - `backend-reviewer` 记住这个仓库里契约升级后最容易漏改 `apps/api` 的返回结构
 - `e2e-reviewer` 记住几个关键链路最容易断在登录态或异步刷新
 

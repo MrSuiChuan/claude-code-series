@@ -66,10 +66,9 @@
 
 例如：
 
-- `pnpm --filter web lint`
-- `pnpm --filter api typecheck`
-- `pnpm --filter contracts test`
-- `pnpm -r test`
+- 项目静态检查命令
+- 项目测试命令
+- 只读的代码搜索或差异检查命令
 - `git status`
 - `git diff *`
 
@@ -81,9 +80,8 @@
 
 例如：
 
-- `pnpm add *`
-- `pnpm remove *`
-- `npx *`
+- 依赖安装或删除命令
+- 会修改运行环境的生成命令
 - `git push *`
 
 这类命令不一定危险，但值得在执行前停一下，确认当前上下文是否真的需要。
@@ -112,8 +110,8 @@ worktree 配置主要解决两个问题：
 - Claude 在隔离分支上工作时，默认基于哪个分支创建
 - 哪些目录或依赖需要复用或特殊处理
 
-在样例里，`node_modules` 被作为 `symlinkDirectories` 使用，就是在减少重复安装成本。
-对于这个前后端分离模板，`.worktreeinclude` 还可以顺手复制一些本地运行必需但不进版本库的文件，例如 `apps/api/prisma/dev.db`。
+在实践里，依赖目录或本地缓存目录有时会被加入 `symlinkDirectories`，目的是减少重复准备环境的成本。
+对于这个前后端分离模板，`.worktreeinclude` 还可以顺手复制一些本地运行必需但不进版本库的文件，例如本地数据文件、认证状态文件或私有配置。
 
 如果团队真的会依赖 worktree，建议同时维护：
 

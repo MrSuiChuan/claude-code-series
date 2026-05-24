@@ -11,6 +11,6 @@ argument-hint: <path-or-screen>
 2. 响应式表现
 3. 可访问性和键盘支持
 4. loading、empty 和 error state
-5. client component 是否用得过多，或是否重复编排了视图逻辑
+5. 前端交互层是否承担了过多复杂度，或是否重复编排了视图逻辑
 
 输出时先给问题，并附带具体修复建议。

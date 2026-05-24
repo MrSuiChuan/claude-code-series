@@ -40,7 +40,7 @@
 
 - `apps/web` 中的页面或组件入口
 - `packages/contracts` 中的请求或响应结构
-- `apps/api` 中的 handler、service 和数据访问层
+- `apps/api` 中的请求入口、业务模块和数据访问层
 - 数据库与第三方集成层
 
 ### 阶段 3：问题收敛

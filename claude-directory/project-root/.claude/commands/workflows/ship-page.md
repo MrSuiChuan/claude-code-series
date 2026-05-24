@@ -16,7 +16,7 @@ argument-hint: <route-or-screen-name>
    - 数据获取和状态处理的惯例
    - 是否已经有对应的共享契约和 API client
 
-2. 调用 `scaffold-page` skill，构建页面或 route segment：
+2. 调用 `scaffold-page` skill，构建页面入口或页面组合：
    - 复用现有 UI 基础组件和布局模式
    - 数据请求优先走统一 API client 和共享契约
    - 共享逻辑提取到可复用组件或前端共享模块
@@ -29,7 +29,7 @@ argument-hint: <route-or-screen-name>
    - 成功态和边界态是否清楚
 
 4. 检查实现复杂度：
-   - 是否引入了不必要的 client component
+   - 是否引入了不必要的前端交互复杂度
    - 是否重复编排了已有视图逻辑
    - 是否把只适合后端的逻辑放进了前端组件
 

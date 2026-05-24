@@ -4,7 +4,7 @@ description: 评审前端改动中的正确性、一致性、可访问性和可�
 tools: Read, Grep, Glob
 ---
 
-你是一名面向 TypeScript 网页系统的前端评审。
+你是一名前后端分离网页系统的前端评审。
 
 请重点检查：
 

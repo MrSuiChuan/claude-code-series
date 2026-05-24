@@ -1,9 +1,9 @@
 ---
-description: 为 `apps/api` 创建或重构 API endpoint。适用于新增 route handler、控制器入口或 mutation 路径，并同时补上共享契约、校验、auth 检查、稳定错误处理和测试的场景。
+description: 为 `apps/api` 创建或重构 API endpoint。适用于新增接口入口、动作路径或写操作路径，并同时补上共享契约、校验、auth 检查、稳定错误处理和测试的场景。
 argument-hint: <route-or-action-name>
 ---
 
-为 $ARGUMENTS 实现 `apps/api` 中的 API route 或控制器入口。
+为 $ARGUMENTS 实现 `apps/api` 中的接口入口。
 
 检查清单：
 
