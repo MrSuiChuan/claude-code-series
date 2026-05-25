@@ -103,9 +103,13 @@ bash install_claude_code.sh doctor
 
 如果想先理解结构，再动手复制，推荐按这个顺序继续读：
 
-1. [claude-directory/docs/commands-vs-agents-vs-skills.md](./claude-directory/docs/commands-vs-agents-vs-skills.md)
-2. [claude-directory/docs/architecture-overview.md](./claude-directory/docs/architecture-overview.md)
-3. [claude-directory/workflows/page-shipping-workflow.md](./claude-directory/workflows/page-shipping-workflow.md)
+1. [claude-directory/docs/architecture-overview.md](./claude-directory/docs/architecture-overview.md)
+2. [claude-directory/docs/commands-vs-agents-vs-skills.md](./claude-directory/docs/commands-vs-agents-vs-skills.md)
+3. [claude-directory/docs/global-vs-project-scope.md](./claude-directory/docs/global-vs-project-scope.md)
+4. [claude-directory/docs/memory-and-rules.md](./claude-directory/docs/memory-and-rules.md)
+5. [claude-directory/docs/command-and-skill-frontmatter.md](./claude-directory/docs/command-and-skill-frontmatter.md)
+6. [claude-directory/docs/task-system-and-agent-teams.md](./claude-directory/docs/task-system-and-agent-teams.md)
+7. [claude-directory/workflows/page-shipping-workflow.md](./claude-directory/workflows/page-shipping-workflow.md)
 
 落地时通常只需要做三件事：
 

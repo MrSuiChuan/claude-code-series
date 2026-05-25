@@ -72,8 +72,11 @@ claude-directory/
   docs/
     architecture-overview.md
     commands-vs-agents-vs-skills.md
+    command-and-skill-frontmatter.md
+    global-vs-project-scope.md
     memory-and-rules.md
     settings-and-hooks.md
+    task-system-and-agent-teams.md
   workflows/
     page-shipping-workflow.md
     api-route-workflow.md
@@ -295,11 +298,47 @@ monorepo 总约定。
 
 如果你第一次接触这套目录，推荐按这个顺序看：
 
-1. [`docs/commands-vs-agents-vs-skills.md`](./docs/commands-vs-agents-vs-skills.md)
-2. [`docs/architecture-overview.md`](./docs/architecture-overview.md)
-3. [`docs/memory-and-rules.md`](./docs/memory-and-rules.md)
-4. [`docs/settings-and-hooks.md`](./docs/settings-and-hooks.md)
-5. [`workflows/page-shipping-workflow.md`](./workflows/page-shipping-workflow.md)
+1. [`docs/architecture-overview.md`](./docs/architecture-overview.md)
+2. [`docs/commands-vs-agents-vs-skills.md`](./docs/commands-vs-agents-vs-skills.md)
+3. [`docs/global-vs-project-scope.md`](./docs/global-vs-project-scope.md)
+4. [`docs/memory-and-rules.md`](./docs/memory-and-rules.md)
+5. [`docs/command-and-skill-frontmatter.md`](./docs/command-and-skill-frontmatter.md)
+6. [`docs/settings-and-hooks.md`](./docs/settings-and-hooks.md)
+7. [`docs/task-system-and-agent-teams.md`](./docs/task-system-and-agent-teams.md)
+8. [`workflows/page-shipping-workflow.md`](./workflows/page-shipping-workflow.md)
+
+## 文档地图
+
+如果你是按主题阅读，推荐这样理解：
+
+### 核心篇
+
+- [`docs/architecture-overview.md`](./docs/architecture-overview.md)
+  先看整体分层和目录职责
+- [`docs/commands-vs-agents-vs-skills.md`](./docs/commands-vs-agents-vs-skills.md)
+  再看 command、agent、skill 的边界
+- [`docs/global-vs-project-scope.md`](./docs/global-vs-project-scope.md)
+  再看哪些能力适合放项目层，哪些更适合放全局层
+- [`docs/memory-and-rules.md`](./docs/memory-and-rules.md)
+  再看规则和 memory 怎么沉淀
+- [`docs/command-and-skill-frontmatter.md`](./docs/command-and-skill-frontmatter.md)
+  最后看文件头字段怎么写得更稳定
+
+### 配置篇
+
+- [`docs/settings-and-hooks.md`](./docs/settings-and-hooks.md)
+  解释项目运行边界和自动化动作
+
+### 进阶篇
+
+- [`docs/task-system-and-agent-teams.md`](./docs/task-system-and-agent-teams.md)
+  解释 task system、agent teams 和项目模板之间的边界
+
+### 示例篇
+
+- [`workflows/page-shipping-workflow.md`](./workflows/page-shipping-workflow.md)
+- [`workflows/api-route-workflow.md`](./workflows/api-route-workflow.md)
+- [`workflows/bugfix-workflow.md`](./workflows/bugfix-workflow.md)
 
 ## 如何按项目结构裁剪
 
@@ -371,8 +410,11 @@ monorepo 总约定。
 - [`project-root/`](./project-root)
 - [`docs/commands-vs-agents-vs-skills.md`](./docs/commands-vs-agents-vs-skills.md)
 - [`docs/architecture-overview.md`](./docs/architecture-overview.md)
+- [`docs/global-vs-project-scope.md`](./docs/global-vs-project-scope.md)
 - [`docs/memory-and-rules.md`](./docs/memory-and-rules.md)
+- [`docs/command-and-skill-frontmatter.md`](./docs/command-and-skill-frontmatter.md)
 - [`docs/settings-and-hooks.md`](./docs/settings-and-hooks.md)
+- [`docs/task-system-and-agent-teams.md`](./docs/task-system-and-agent-teams.md)
 - [`workflows/page-shipping-workflow.md`](./workflows/page-shipping-workflow.md)
 - [`workflows/api-route-workflow.md`](./workflows/api-route-workflow.md)
 - [`workflows/bugfix-workflow.md`](./workflows/bugfix-workflow.md)
