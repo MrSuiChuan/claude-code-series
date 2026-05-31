@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1748">
+<title>PaperClip Pro — AI Agent Orchestration</title>
+<style>
+:root {
+  --bg-deep: #060f1e;
+  --bg-primary: #0a1628;
+  --bg-card: #0d2140;
+  --bg-card-hover: #112b50;
+  --border-subtle: #152d52;
+  --border-card: #1a3560;
+  --text-primary: #e8e4dc;
+  --text-secondary: #8b97a8;
+  --text-muted: #5a6878;
+  --accent-amber: #c49456;
+  --accent-amber-light: #d4a868;
+  --accent-gold: #b8863a;
+  --accent-teal: #3d8b7e;
+  --accent-teal-bright: #4dab9a;
+  --accent-blue: #4a80c0;
+  --status-green: #4a9e6e;
+  --status-yellow: #c49456;
+  --status-red: #c05050;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
+  background:var(--bg-deep);color:var(--text-primary);line-height:1.5;
+  -webkit-font-smoothing:antialiased;min-width:1748px;overflow-x:hidden;
+}
+.glow-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;opacity:.06}
+.glow-orb.orb-1{width:500px;height:500px;background:var(--accent-amber);top:-100px;right:-100px}
+.glow-orb.orb-2{width:400px;height:400px;background:var(--accent-teal);bottom:-80px;left:-80px}
+
+.header{
+  background:var(--bg-primary);border-bottom:1px solid var(--border-subtle);
+  padding:0 48px;height:56px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100;
+}
+.header-left{display:flex;align-items:center;gap:40px}
+.logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:-.3px;text-decoration:none}
+.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--accent-amber),var(--accent-gold));border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:14px;color:#0a1628;font-weight:900}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:14px;font-weight:500;transition:color .15s;padding:4px 0;border-bottom:2px solid transparent}
+.nav-links a:hover,.nav-links a.active{color:var(--text-primary);border-bottom-color:var(--accent-amber)}
+.header-right{display:flex;align-items:center;gap:16px}
+.btn{padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,var(--accent-amber),var(--accent-gold));color:#0a1628}
+.btn-primary:hover{background:linear-gradient(135deg,var(--accent-amber-light),var(--accent-amber));box-shadow:0 0 20px rgba(196,148,86,.3)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-subtle)}
+.btn-ghost:hover{border-color:var(--text-muted);color:var(--text-primary)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--status-green);display:inline-block;box-shadow:0 0 6px rgba(74,158,110,.5)}
+
+.main-content{max-width:1652px;margin:0 auto;padding:0 48px}
+
+.hero{padding:64px 0 48px;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(196,148,86,.08) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(196,148,86,.1);border:1px solid rgba(196,148,86,.2);color:var(--accent-amber-light);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;margin-bottom:24px}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-amber);box-shadow:0 0 8px var(--accent-amber)}
+.hero h1{font-size:52px;font-weight:800;letter-spacing:-1.2px;line-height:1.15;margin-bottom:16px;background:linear-gradient(180deg,#f0ebe0 0%,#c4b898 50%,#8b7a60 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:17px;color:var(--text-secondary);max-width:640px;margin:0 auto 32px;line-height:1.6}
+.hero-actions{display:flex;gap:14px;justify-content:center}
+.btn-lg{padding:12px 28px;font-size:15px;border-radius:var(--radius-md)}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:48px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-lg);padding:24px 28px;transition:all .2s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent-amber),transparent);opacity:0;transition:opacity .2s}
+.stat-card:hover{background:var(--bg-card-hover);border-color:var(--accent-amber)}
+.stat-card:hover::after{opacity:1}
+.stat-icon{width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:16px}
+.stat-icon.amber{background:rgba(196,148,86,.15);color:var(--accent-amber-light)}
+.stat-icon.teal{background:rgba(61,139,126,.15);color:var(--accent-teal-bright)}
+.stat-icon.blue{background:rgba(74,128,192,.15);color:var(--accent-blue)}
+.stat-icon.green{background:rgba(74,158,110,.15);color:var(--status-green)}
+.stat-label{font-size:13px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-value{font-size:32px;font-weight:800;letter-spacing:-.5px}
+.stat-change{font-size:12px;margin-top:6px;font-weight:500}
+.stat-change.up{color:var(--status-green)}
+
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.section-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.section-subtitle{font-size:14px;color:var(--text-muted);margin-top:4px}
+
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:48px}
+.info-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-lg);padding:24px;transition:all .2s}
+.info-card:hover{background:var(--bg-card-hover)}
+.info-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.info-card-title{font-size:15px;font-weight:600}
+.info-card-badge{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:600}
+.badge-active{background:rgba(74,158,110,.15);color:var(--status-green)}
+.badge-warning{background:rgba(196,148,86,.15);color:var(--status-yellow)}
+.badge-idle{background:rgba(90,104,120,.15);color:var(--text-muted)}
+.info-card-desc{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px}
+.info-card-meta{display:flex;gap:20px;font-size:12px;color:var(--text-muted)}
+.meta-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+
+.activity-section{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:48px}
+.activity-header{padding:20px 28px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center}
+.activity-table{width:100%;border-collapse:collapse}
+.activity-table th{text-align:left;padding:14px 28px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border-subtle)}
+.activity-table td{padding:14px 28px;font-size:14px;border-bottom:1px solid rgba(21,45,82,.5)}
+.activity-table tr:hover td{background:rgba(255,255,255,.02)}
+.agent-name{display:flex;align-items:center;gap:10px;font-weight:500}
+.agent-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.agent-avatar.amber{background:rgba(196,148,86,.2);color:var(--accent-amber-light)}
+.agent-avatar.teal{background:rgba(61,139,126,.2);color:var(--accent-teal-bright)}
+.agent-avatar.blue{background:rgba(74,128,192,.2);color:var(--accent-blue)}
+.agent-avatar.green{background:rgba(74,158,110,.2);color:var(--status-green)}
+.agent-avatar.red{background:rgba(192,80,80,.2);color:var(--status-red)}
+.status-pill{font-size:12px;padding:3px 10px;border-radius:12px;font-weight:600;display:inline-block}
+.status-pill.running{background:rgba(74,158,110,.12);color:var(--status-green)}
+.status-pill.review{background:rgba(196,148,86,.12);color:var(--status-yellow)}
+.status-pill.idle{background:rgba(90,104,120,.12);color:var(--text-muted)}
+.token-cost{font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--text-secondary)}
+
+.footer{border-top:1px solid var(--border-subtle);background:var(--bg-primary);padding:28px 48px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text-muted)}
+.footer-links{display:flex;gap:24px;list-style:none}
+.footer-links a{color:var(--text-muted);text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:var(--text-secondary)}
+</style>
+</head>
+<body>
+
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+
+<header class="header">
+  <div class="header-left">
+    <a href="#" class="logo"><div class="logo-icon">P</div>PaperClip Pro</a>
+    <nav><ul class="nav-links">
+      <li><a href="#" class="active">Overview</a></li>
+      <li><a href="#">Agents</a></li>
+      <li><a href="#">Tasks</a></li>
+      <li><a href="#">Budget</a></li>
+      <li><a href="#">Settings</a></li>
+    </ul></nav>
+  </div>
+  <div class="header-right">
+    <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary)"><span class="status-dot"></span> 5 Agents Online</span>
+    <button class="btn btn-ghost">Docs</button>
+    <button class="btn btn-primary">+ New Task</button>
+  </div>
+</header>
+
+<main class="main-content">
+
+  <section class="hero">
+    <div class="hero-badge"><span class="dot"></span> v1.0.0 &middot; 4-Layer Architecture</div>
+    <h1>AI Agent Orchestration<br>Made Simple</h1>
+    <p>Define org charts, schedule heartbeats, manage task queues, and enforce budgets. PaperClip Pro turns Claude Code into a structured multi-agent company with engineering quality, design taste, and brand-aligned design systems.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary btn-lg">/paperclip init my-project</button>
+      <button class="btn btn-ghost btn-lg">View Documentation</button>
+    </div>
+  </section>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon amber">&#9670;</div><div class="stat-label">Active Tasks</div><div class="stat-value">24</div><div class="stat-change up">+12% vs last week</div></div>
+    <div class="stat-card"><div class="stat-icon teal">&#9632;</div><div class="stat-label">Agents Online</div><div class="stat-value">5/5</div><div class="stat-change up">All systems operational</div></div>
+    <div class="stat-card"><div class="stat-icon blue">&#9648;</div><div class="stat-label">Budget Used Today</div><div class="stat-value">128K</div><div class="stat-change" style="color:var(--status-yellow)">25.6% of 500K</div></div>
+    <div class="stat-card"><div class="stat-icon green">&#9654;</div><div class="stat-label">Heartbeats (24h)</div><div class="stat-value">1,440</div><div class="stat-change up">Every 1 min avg</div></div>
+  </div>
+
+  <div class="section-header">
+    <div><div class="section-title">Agent Team</div><div class="section-subtitle">5 specialized roles with 4-layer skill integration</div></div>
+    <button class="btn btn-ghost">Manage Agents</button>
+  </div>
+
+  <div class="card-grid">
+    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Architect</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">System design, task decomposition, PRD creation. Equipped with /grill-me, /to-prd, /to-issues, /zoom-out.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-amber)"></span> 3 tasks</span><span>Budget: 25%</span><span>80K max</span></div></div>
+    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Developer</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">TDD implementation, bug fixing, frontend with taste-skill. Equipped with /tdd, /diagnose, taste-skill, output-skill.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-teal)"></span> 12 tasks</span><span>Budget: 40%</span><span>50K max</span></div></div>
+    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Reviewer</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">Code review, security audit, brand consistency check. Equipped with /triage, /code-review, /diagnose, taste-skill.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-blue)"></span> 5 tasks</span><span>Budget: 20%</span><span>40K max</span></div></div>
+    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Tester</div><span class="info-card-badge badge-idle">Idle</span></div><div class="info-card-desc">Test creation, automation, bug reporting. Equipped with /tdd, /diagnose, /triage.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--status-green)"></span> 2 tasks</span><span>Budget: 5%</span><span>30K max</span></div></div>
+    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Operator</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">Deployment, monitoring, incident response. Equipped with /diagnose, /triage, /handoff.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-blue)"></span> 2 tasks</span><span>Budget: 10%</span><span>30K max</span></div></div>
+    <div class="info-card" style="border-color:rgba(196,148,86,.25);background:linear-gradient(135deg,var(--bg-card),rgba(196,148,86,.05))"><div class="info-card-header"><div class="info-card-title">+ Custom Role</div><span class="info-card-badge badge-warning">Pro</span></div><div class="info-card-desc">Define custom agent roles with specific capabilities, budget shares, and skill mappings. Full 4-layer integration.</div><div class="info-card-meta"><span>Unlimited roles</span><span>Custom skills</span></div></div>
+    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Design System (L4)</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">58+ brand DESIGN.md specs from awesome-design-md. Fetch on demand: vercel, stripe, linear, apple, and more via design_fetcher.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-teal)"></span> vercel active</span><span>design_fetcher</span></div></div>
+    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Budget Governance</div><span class="info-card-badge badge-warning">80% Alert</span></div><div class="info-card-desc">Daily cap: 500K tokens. Auto-throttle at 80%. Board approval required for overrides and production deploys.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--status-red)"></span> 128K spent</span><span>372K remaining</span></div></div>
+  </div>
+
+  <div class="activity-section">
+    <div class="activity-header">
+      <div><div class="section-title" style="margin-bottom:0">Recent Activity</div><div class="section-subtitle">Latest heartbeat executions and task updates</div></div>
+      <button class="btn btn-ghost">View All</button>
+    </div>
+    <table class="activity-table">
+      <thead><tr><th>Agent</th><th>Task</th><th>Skill Used</th><th>Status</th><th>Tokens</th><th>Time</th></tr></thead>
+      <tbody>
+        <tr><td><div class="agent-name"><div class="agent-avatar amber">A</div>Architect_01</div></td><td>Design user authentication system</td><td><span class="token-cost">/grill-me /to-prd</span></td><td><span class="status-pill review">in_review</span></td><td><span class="token-cost">12,450</span></td><td style="color:var(--text-muted)">2 min ago</td></tr>
+        <tr><td><div class="agent-name"><div class="agent-avatar teal">D</div>Developer_01</div></td><td>Implement JWT login endpoint</td><td><span class="token-cost">/tdd taste-skill</span></td><td><span class="status-pill running">in_progress</span></td><td><span class="token-cost">8,320</span></td><td style="color:var(--text-muted)">5 min ago</td></tr>
+        <tr><td><div class="agent-name"><div class="agent-avatar blue">R</div>Reviewer_01</div></td><td>Review PR #42: auth middleware</td><td><span class="token-cost">/triage /code-review</span></td><td><span class="status-pill review">in_review</span></td><td><span class="token-cost">4,100</span></td><td style="color:var(--text-muted)">12 min ago</td></tr>
+        <tr><td><div class="agent-name"><div class="agent-avatar green">T</div>Tester_01</div></td><td>Write integration tests for login flow</td><td><span class="token-cost">/tdd</span></td><td><span class="status-pill idle">todo</span></td><td><span class="token-cost">&mdash;</span></td><td style="color:var(--text-muted)">Assigned</td></tr>
+        <tr><td><div class="agent-name"><div class="agent-avatar red">O</div>Operator_01</div></td><td>Deploy staging environment v2.1.0</td><td><span class="token-cost">/diagnose /handoff</span></td><td><span class="status-pill running">in_progress</span></td><td><span class="token-cost">2,800</span></td><td style="color:var(--text-muted)">28 min ago</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <span>PaperClip Pro v1.0.0 &middot; Built with Claude Code &middot; 4-Layer Architecture</span>
+  <ul class="footer-links">
+    <li><a href="#">Docs</a></li><li><a href="#">GitHub</a></li><li><a href="#">awesome-design-md</a></li><li><a href="#">mattpocock/skills</a></li><li><a href="#">taste-skill</a></li>
+  </ul>
+</footer>
+
+</body>
+</html>
