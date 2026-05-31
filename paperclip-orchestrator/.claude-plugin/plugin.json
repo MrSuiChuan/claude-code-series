@@ -1,0 +1,47 @@
+{
+  "name": "paperclip-orchestrator",
+  "version": "1.0.0",
+  "description": "PaperClip Pro - 4-layer AI agent orchestration platform. Manages multi-agent companies with org charts, heartbeat scheduling, task queues, budget tracking, governance rules, engineering quality (TDD/diagnosis/code review), design taste (anti-slop frontend), and brand-aligned design systems (58+ DESIGN.md specs).",
+  "author": {
+    "name": "PaperClip AI",
+    "url": "https://github.com/paperclipai/paperclip"
+  },
+  "homepage": "https://github.com/MrSuiChuan/claude-code-series/tree/main/paperclip-orchestrator",
+  "repository": "https://github.com/MrSuiChuan/claude-code-series",
+  "category": "orchestration",
+  "tags": [
+    "agent-orchestration",
+    "multi-agent",
+    "task-management",
+    "heartbeat",
+    "budget-tracking",
+    "governance",
+    "tdd",
+    "code-review",
+    "frontend-design",
+    "design-system",
+    "paperclip",
+    "workflow-automation"
+  ],
+  "skills": ["SKILL.md"],
+  "commands": [
+    {
+      "name": "/paperclip",
+      "description": "PaperClip orchestrator: init, start, status, create-task, budget, approve, pause, resume"
+    }
+  ],
+  "requirements": {
+    "python": ">=3.10",
+    "optional": [
+      "npx skills@latest add mattpocock/skills",
+      "npx skills add https://github.com/Leonxlnx/taste-skill"
+    ]
+  },
+  "layers": [
+    {"name": "Orchestration", "description": "Org charts, heartbeats, task queues, budget, governance"},
+    {"name": "Engineering Quality", "description": "TDD, diagnosis, code review, PRD (mattpocock/skills)"},
+    {"name": "Design Taste", "description": "Anti-slop frontend, variance/motion/density (taste-skill)"},
+    {"name": "Design Spec", "description": "58+ brand DESIGN.md specs (awesome-design-md)"}
+  ],
+  "license": "MIT"
+}
