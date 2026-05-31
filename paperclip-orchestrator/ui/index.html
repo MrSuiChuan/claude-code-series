@@ -1,213 +1,382 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1748">
-<title>PaperClip Pro — AI Agent Orchestration</title>
+<title>松夜城 — Song Night City</title>
 <style>
 :root {
-  --bg-deep: #060f1e;
-  --bg-primary: #0a1628;
-  --bg-card: #0d2140;
-  --bg-card-hover: #112b50;
-  --border-subtle: #152d52;
-  --border-card: #1a3560;
-  --text-primary: #e8e4dc;
-  --text-secondary: #8b97a8;
-  --text-muted: #5a6878;
-  --accent-amber: #c49456;
-  --accent-amber-light: #d4a868;
-  --accent-gold: #b8863a;
-  --accent-teal: #3d8b7e;
-  --accent-teal-bright: #4dab9a;
-  --accent-blue: #4a80c0;
-  --status-green: #4a9e6e;
-  --status-yellow: #c49456;
-  --status-red: #c05050;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --bg-deep: #080e14;
+  --water: #0d2b45;
+  --water-bright: #144a6e;
+  --city-warm: #3d2a1a;
+  --city-mid: #4a3522;
+  --city-bright: #6b4226;
+  --forest: #1a2e1a;
+  --forest-bright: #2a4a24;
+  --road: #2a2824;
+  --wall: #3a3832;
+  --marker: #e8d498;
+  --marker-glow: #f5e8c0;
+  --label: #c4a060;
+  --label-bright: #d4b878;
+  --header-bg: #0a1628;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;
-  background:var(--bg-deep);color:var(--text-primary);line-height:1.5;
-  -webkit-font-smoothing:antialiased;min-width:1748px;overflow-x:hidden;
+  background:var(--bg-deep);color:#ccc;font-family:'Segoe UI',system-ui,sans-serif;
+  overflow-x:hidden;width:1748px;margin:0 auto;
 }
-.glow-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;opacity:.06}
-.glow-orb.orb-1{width:500px;height:500px;background:var(--accent-amber);top:-100px;right:-100px}
-.glow-orb.orb-2{width:400px;height:400px;background:var(--accent-teal);bottom:-80px;left:-80px}
 
 .header{
-  background:var(--bg-primary);border-bottom:1px solid var(--border-subtle);
-  padding:0 48px;height:56px;display:flex;align-items:center;
-  justify-content:space-between;position:sticky;top:0;z-index:100;
+  background:var(--header-bg);border-bottom:1px solid #1a2d40;
+  padding:0 40px;height:52px;display:flex;align-items:center;justify-content:space-between;
 }
-.header-left{display:flex;align-items:center;gap:40px}
-.logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:-.3px;text-decoration:none}
-.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--accent-amber),var(--accent-gold));border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:14px;color:#0a1628;font-weight:900}
-.nav-links{display:flex;gap:28px;list-style:none}
-.nav-links a{color:var(--text-secondary);text-decoration:none;font-size:14px;font-weight:500;transition:color .15s;padding:4px 0;border-bottom:2px solid transparent}
-.nav-links a:hover,.nav-links a.active{color:var(--text-primary);border-bottom-color:var(--accent-amber)}
-.header-right{display:flex;align-items:center;gap:16px}
-.btn{padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:inherit}
-.btn-primary{background:linear-gradient(135deg,var(--accent-amber),var(--accent-gold));color:#0a1628}
-.btn-primary:hover{background:linear-gradient(135deg,var(--accent-amber-light),var(--accent-amber));box-shadow:0 0 20px rgba(196,148,86,.3)}
-.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-subtle)}
-.btn-ghost:hover{border-color:var(--text-muted);color:var(--text-primary)}
-.status-dot{width:8px;height:8px;border-radius:50%;background:var(--status-green);display:inline-block;box-shadow:0 0 6px rgba(74,158,110,.5)}
+.header-left{display:flex;align-items:center;gap:32px}
+.logo{font-size:16px;font-weight:700;color:#d4c8a0;letter-spacing:.5px}
+.logo span{color:#8b9ab0;font-weight:400;margin-left:6px;font-size:13px}
+.nav{display:flex;gap:24px;list-style:none}
+.nav a{color:#6a7a8a;text-decoration:none;font-size:13px;transition:color .2s}
+.nav a:hover,.nav a.active{color:#c4b080}
+.header-right{display:flex;align-items:center;gap:14px;font-size:12px;color:#5a6a78}
 
-.main-content{max-width:1652px;margin:0 auto;padding:0 48px}
+.map-container{
+  position:relative;width:1748px;height:847px;
+  background:radial-gradient(ellipse at 65% 40%,#1a2530 0%,#0a1018 60%,#060a10 100%);
+  overflow:hidden;
+}
+.map-container svg{width:100%;height:100%}
 
-.hero{padding:64px 0 48px;text-align:center;position:relative}
-.hero::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(196,148,86,.08) 0%,transparent 70%);pointer-events:none}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(196,148,86,.1);border:1px solid rgba(196,148,86,.2);color:var(--accent-amber-light);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;margin-bottom:24px}
-.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-amber);box-shadow:0 0 8px var(--accent-amber)}
-.hero h1{font-size:52px;font-weight:800;letter-spacing:-1.2px;line-height:1.15;margin-bottom:16px;background:linear-gradient(180deg,#f0ebe0 0%,#c4b898 50%,#8b7a60 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero p{font-size:17px;color:var(--text-secondary);max-width:640px;margin:0 auto 32px;line-height:1.6}
-.hero-actions{display:flex;gap:14px;justify-content:center}
-.btn-lg{padding:12px 28px;font-size:15px;border-radius:var(--radius-md)}
+/* Legend */
+.legend{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;gap:28px;background:rgba(10,18,28,.85);
+  border:1px solid #1a2d40;border-radius:8px;padding:10px 24px;
+  font-size:11px;color:#8a9aa8;
+}
+.legend-item{display:flex;align-items:center;gap:7px}
+.legend-dot{width:8px;height:8px;border-radius:2px}
 
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:48px}
-.stat-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-lg);padding:24px 28px;transition:all .2s;position:relative;overflow:hidden}
-.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent-amber),transparent);opacity:0;transition:opacity .2s}
-.stat-card:hover{background:var(--bg-card-hover);border-color:var(--accent-amber)}
-.stat-card:hover::after{opacity:1}
-.stat-icon{width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:16px}
-.stat-icon.amber{background:rgba(196,148,86,.15);color:var(--accent-amber-light)}
-.stat-icon.teal{background:rgba(61,139,126,.15);color:var(--accent-teal-bright)}
-.stat-icon.blue{background:rgba(74,128,192,.15);color:var(--accent-blue)}
-.stat-icon.green{background:rgba(74,158,110,.15);color:var(--status-green)}
-.stat-label{font-size:13px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.stat-value{font-size:32px;font-weight:800;letter-spacing:-.5px}
-.stat-change{font-size:12px;margin-top:6px;font-weight:500}
-.stat-change.up{color:var(--status-green)}
-
-.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.section-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
-.section-subtitle{font-size:14px;color:var(--text-muted);margin-top:4px}
-
-.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:48px}
-.info-card{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-lg);padding:24px;transition:all .2s}
-.info-card:hover{background:var(--bg-card-hover)}
-.info-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
-.info-card-title{font-size:15px;font-weight:600}
-.info-card-badge{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:600}
-.badge-active{background:rgba(74,158,110,.15);color:var(--status-green)}
-.badge-warning{background:rgba(196,148,86,.15);color:var(--status-yellow)}
-.badge-idle{background:rgba(90,104,120,.15);color:var(--text-muted)}
-.info-card-desc{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px}
-.info-card-meta{display:flex;gap:20px;font-size:12px;color:var(--text-muted)}
-.meta-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
-
-.activity-section{background:var(--bg-card);border:1px solid var(--border-card);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:48px}
-.activity-header{padding:20px 28px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center}
-.activity-table{width:100%;border-collapse:collapse}
-.activity-table th{text-align:left;padding:14px 28px;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border-subtle)}
-.activity-table td{padding:14px 28px;font-size:14px;border-bottom:1px solid rgba(21,45,82,.5)}
-.activity-table tr:hover td{background:rgba(255,255,255,.02)}
-.agent-name{display:flex;align-items:center;gap:10px;font-weight:500}
-.agent-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
-.agent-avatar.amber{background:rgba(196,148,86,.2);color:var(--accent-amber-light)}
-.agent-avatar.teal{background:rgba(61,139,126,.2);color:var(--accent-teal-bright)}
-.agent-avatar.blue{background:rgba(74,128,192,.2);color:var(--accent-blue)}
-.agent-avatar.green{background:rgba(74,158,110,.2);color:var(--status-green)}
-.agent-avatar.red{background:rgba(192,80,80,.2);color:var(--status-red)}
-.status-pill{font-size:12px;padding:3px 10px;border-radius:12px;font-weight:600;display:inline-block}
-.status-pill.running{background:rgba(74,158,110,.12);color:var(--status-green)}
-.status-pill.review{background:rgba(196,148,86,.12);color:var(--status-yellow)}
-.status-pill.idle{background:rgba(90,104,120,.12);color:var(--text-muted)}
-.token-cost{font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--text-secondary)}
-
-.footer{border-top:1px solid var(--border-subtle);background:var(--bg-primary);padding:28px 48px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text-muted)}
-.footer-links{display:flex;gap:24px;list-style:none}
-.footer-links a{color:var(--text-muted);text-decoration:none;transition:color .15s}
-.footer-links a:hover{color:var(--text-secondary)}
+/* Tooltip */
+.tooltip{
+  display:none;position:absolute;
+  background:rgba(10,18,28,.95);border:1px solid #c4a060;
+  padding:6px 12px;border-radius:4px;font-size:12px;color:#d4c8a0;
+  pointer-events:none;white-space:nowrap;z-index:10;
+}
 </style>
 </head>
 <body>
 
-<div class="glow-orb orb-1"></div>
-<div class="glow-orb orb-2"></div>
-
 <header class="header">
   <div class="header-left">
-    <a href="#" class="logo"><div class="logo-icon">P</div>PaperClip Pro</a>
-    <nav><ul class="nav-links">
-      <li><a href="#" class="active">Overview</a></li>
-      <li><a href="#">Agents</a></li>
-      <li><a href="#">Tasks</a></li>
-      <li><a href="#">Budget</a></li>
-      <li><a href="#">Settings</a></li>
-    </ul></nav>
+    <div class="logo">松夜城 <span>Song Night City</span></div>
+    <ul class="nav">
+      <li><a href="#" class="active">全图</a></li>
+      <li><a href="#">内城</a></li>
+      <li><a href="#">坊市</a></li>
+      <li><a href="#">松江</a></li>
+      <li><a href="#">松山</a></li>
+    </ul>
   </div>
-  <div class="header-right">
-    <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary)"><span class="status-dot"></span> 5 Agents Online</span>
-    <button class="btn btn-ghost">Docs</button>
-    <button class="btn btn-primary">+ New Task</button>
-  </div>
+  <div class="header-right">松夜城全图 · 正式名称版</div>
 </header>
 
-<main class="main-content">
+<div class="map-container" id="map">
+<svg viewBox="0 0 1748 847" xmlns="http://www.w3.org/2000/svg">
 
-  <section class="hero">
-    <div class="hero-badge"><span class="dot"></span> v1.0.0 &middot; 4-Layer Architecture</div>
-    <h1>AI Agent Orchestration<br>Made Simple</h1>
-    <p>Define org charts, schedule heartbeats, manage task queues, and enforce budgets. PaperClip Pro turns Claude Code into a structured multi-agent company with engineering quality, design taste, and brand-aligned design systems.</p>
-    <div class="hero-actions">
-      <button class="btn btn-primary btn-lg">/paperclip init my-project</button>
-      <button class="btn btn-ghost btn-lg">View Documentation</button>
-    </div>
-  </section>
+  <defs>
+    <!-- Glow filter for markers -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-strong">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Water texture -->
+    <pattern id="waterPat" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="none"/>
+      <path d="M0 20 Q10 18 20 20 Q30 22 40 20" stroke="#1a5580" stroke-width="0.5" fill="none" opacity="0.3"/>
+      <path d="M0 30 Q10 28 20 30 Q30 32 40 30" stroke="#1a5580" stroke-width="0.4" fill="none" opacity="0.2"/>
+    </pattern>
+    <!-- Forest texture -->
+    <pattern id="forestPat" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="none"/>
+      <circle cx="5" cy="5" r="1" fill="#3a6a30" opacity="0.3"/>
+      <circle cx="12" cy="14" r="1.5" fill="#2a5a22" opacity="0.25"/>
+      <circle cx="16" cy="6" r="1" fill="#3a6a30" opacity="0.2"/>
+    </pattern>
+  </defs>
 
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-icon amber">&#9670;</div><div class="stat-label">Active Tasks</div><div class="stat-value">24</div><div class="stat-change up">+12% vs last week</div></div>
-    <div class="stat-card"><div class="stat-icon teal">&#9632;</div><div class="stat-label">Agents Online</div><div class="stat-value">5/5</div><div class="stat-change up">All systems operational</div></div>
-    <div class="stat-card"><div class="stat-icon blue">&#9648;</div><div class="stat-label">Budget Used Today</div><div class="stat-value">128K</div><div class="stat-change" style="color:var(--status-yellow)">25.6% of 500K</div></div>
-    <div class="stat-card"><div class="stat-icon green">&#9654;</div><div class="stat-label">Heartbeats (24h)</div><div class="stat-value">1,440</div><div class="stat-change up">Every 1 min avg</div></div>
-  </div>
+  <!-- === WATER BODIES === -->
+  <!-- Left river (松江) -->
+  <path d="M80 120 Q120 180 100 260 Q70 350 90 440 Q110 520 80 600 Q60 680 100 760 L30 760 Q-10 680 10 600 Q30 520 0 440 Q-20 350 10 260 Q30 180 0 120 Z"
+        fill="url(#waterPat)" stroke="#1a5580" stroke-width="1.5" opacity="0.8"/>
+  <path d="M80 120 Q120 180 100 260 Q70 350 90 440 Q110 520 80 600 Q60 680 100 760"
+        fill="none" stroke="#2680b0" stroke-width="1" opacity="0.5"/>
 
-  <div class="section-header">
-    <div><div class="section-title">Agent Team</div><div class="section-subtitle">5 specialized roles with 4-layer skill integration</div></div>
-    <button class="btn btn-ghost">Manage Agents</button>
-  </div>
+  <!-- Right river branch -->
+  <path d="M1680 200 Q1650 280 1670 360 Q1690 440 1660 520 Q1640 600 1670 700"
+        fill="none" stroke="#1a5580" stroke-width="8" opacity="0.6"/>
 
-  <div class="card-grid">
-    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Architect</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">System design, task decomposition, PRD creation. Equipped with /grill-me, /to-prd, /to-issues, /zoom-out.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-amber)"></span> 3 tasks</span><span>Budget: 25%</span><span>80K max</span></div></div>
-    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Developer</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">TDD implementation, bug fixing, frontend with taste-skill. Equipped with /tdd, /diagnose, taste-skill, output-skill.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-teal)"></span> 12 tasks</span><span>Budget: 40%</span><span>50K max</span></div></div>
-    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Reviewer</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">Code review, security audit, brand consistency check. Equipped with /triage, /code-review, /diagnose, taste-skill.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-blue)"></span> 5 tasks</span><span>Budget: 20%</span><span>40K max</span></div></div>
-    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Tester</div><span class="info-card-badge badge-idle">Idle</span></div><div class="info-card-desc">Test creation, automation, bug reporting. Equipped with /tdd, /diagnose, /triage.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--status-green)"></span> 2 tasks</span><span>Budget: 5%</span><span>30K max</span></div></div>
-    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Operator</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">Deployment, monitoring, incident response. Equipped with /diagnose, /triage, /handoff.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-blue)"></span> 2 tasks</span><span>Budget: 10%</span><span>30K max</span></div></div>
-    <div class="info-card" style="border-color:rgba(196,148,86,.25);background:linear-gradient(135deg,var(--bg-card),rgba(196,148,86,.05))"><div class="info-card-header"><div class="info-card-title">+ Custom Role</div><span class="info-card-badge badge-warning">Pro</span></div><div class="info-card-desc">Define custom agent roles with specific capabilities, budget shares, and skill mappings. Full 4-layer integration.</div><div class="info-card-meta"><span>Unlimited roles</span><span>Custom skills</span></div></div>
-    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Design System (L4)</div><span class="info-card-badge badge-active">Active</span></div><div class="info-card-desc">58+ brand DESIGN.md specs from awesome-design-md. Fetch on demand: vercel, stripe, linear, apple, and more via design_fetcher.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--accent-teal)"></span> vercel active</span><span>design_fetcher</span></div></div>
-    <div class="info-card"><div class="info-card-header"><div class="info-card-title">Budget Governance</div><span class="info-card-badge badge-warning">80% Alert</span></div><div class="info-card-desc">Daily cap: 500K tokens. Auto-throttle at 80%. Board approval required for overrides and production deploys.</div><div class="info-card-meta"><span><span class="meta-dot" style="background:var(--status-red)"></span> 128K spent</span><span>372K remaining</span></div></div>
-  </div>
+  <!-- Moat around outer city -->
+  <rect x="280" y="160" width="1180" height="520" rx="12"
+        fill="none" stroke="#1a5580" stroke-width="6" opacity="0.5"/>
 
-  <div class="activity-section">
-    <div class="activity-header">
-      <div><div class="section-title" style="margin-bottom:0">Recent Activity</div><div class="section-subtitle">Latest heartbeat executions and task updates</div></div>
-      <button class="btn btn-ghost">View All</button>
-    </div>
-    <table class="activity-table">
-      <thead><tr><th>Agent</th><th>Task</th><th>Skill Used</th><th>Status</th><th>Tokens</th><th>Time</th></tr></thead>
-      <tbody>
-        <tr><td><div class="agent-name"><div class="agent-avatar amber">A</div>Architect_01</div></td><td>Design user authentication system</td><td><span class="token-cost">/grill-me /to-prd</span></td><td><span class="status-pill review">in_review</span></td><td><span class="token-cost">12,450</span></td><td style="color:var(--text-muted)">2 min ago</td></tr>
-        <tr><td><div class="agent-name"><div class="agent-avatar teal">D</div>Developer_01</div></td><td>Implement JWT login endpoint</td><td><span class="token-cost">/tdd taste-skill</span></td><td><span class="status-pill running">in_progress</span></td><td><span class="token-cost">8,320</span></td><td style="color:var(--text-muted)">5 min ago</td></tr>
-        <tr><td><div class="agent-name"><div class="agent-avatar blue">R</div>Reviewer_01</div></td><td>Review PR #42: auth middleware</td><td><span class="token-cost">/triage /code-review</span></td><td><span class="status-pill review">in_review</span></td><td><span class="token-cost">4,100</span></td><td style="color:var(--text-muted)">12 min ago</td></tr>
-        <tr><td><div class="agent-name"><div class="agent-avatar green">T</div>Tester_01</div></td><td>Write integration tests for login flow</td><td><span class="token-cost">/tdd</span></td><td><span class="status-pill idle">todo</span></td><td><span class="token-cost">&mdash;</span></td><td style="color:var(--text-muted)">Assigned</td></tr>
-        <tr><td><div class="agent-name"><div class="agent-avatar red">O</div>Operator_01</div></td><td>Deploy staging environment v2.1.0</td><td><span class="token-cost">/diagnose /handoff</span></td><td><span class="status-pill running">in_progress</span></td><td><span class="token-cost">2,800</span></td><td style="color:var(--text-muted)">28 min ago</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- === FOREST AREAS === -->
+  <!-- Northern forest (松山) -->
+  <ellipse cx="500" cy="120" rx="280" ry="70" fill="url(#forestPat)" stroke="#2a4a24" stroke-width="1.5" opacity="0.7"/>
+  <ellipse cx="1100" cy="110" rx="320" ry="60" fill="url(#forestPat)" stroke="#2a4a24" stroke-width="1.5" opacity="0.6"/>
 
-</main>
+  <!-- Eastern bamboo forest (竹林) -->
+  <ellipse cx="1580" cy="420" rx="100" ry="180" fill="url(#forestPat)" stroke="#2a4a24" stroke-width="1" opacity="0.65"/>
 
-<footer class="footer">
-  <span>PaperClip Pro v1.0.0 &middot; Built with Claude Code &middot; 4-Layer Architecture</span>
-  <ul class="footer-links">
-    <li><a href="#">Docs</a></li><li><a href="#">GitHub</a></li><li><a href="#">awesome-design-md</a></li><li><a href="#">mattpocock/skills</a></li><li><a href="#">taste-skill</a></li>
-  </ul>
-</footer>
+  <!-- Southern forest patches -->
+  <ellipse cx="400" cy="720" rx="160" ry="50" fill="url(#forestPat)" stroke="#2a4a24" stroke-width="1" opacity="0.5"/>
+  <ellipse cx="1300" cy="730" rx="200" ry="45" fill="url(#forestPat)" stroke="#2a4a24" stroke-width="1" opacity="0.5"/>
+
+  <!-- === OUTER CITY WALLS === -->
+  <rect x="300" y="180" width="1148" height="488" rx="10"
+        fill="none" stroke="#5a5040" stroke-width="4" opacity="0.9"/>
+  <rect x="306" y="186" width="1136" height="476" rx="8"
+        fill="none" stroke="#6a6050" stroke-width="1.5" opacity="0.6"/>
+  <!-- Battlement marks along walls -->
+  <g stroke="#5a5040" stroke-width="2" opacity="0.7">
+    <line x1="320" y1="175" x2="320" y2="185"/><line x1="360" y1="175" x2="360" y2="185"/>
+    <line x1="400" y1="175" x2="400" y2="185"/><line x1="440" y1="175" x2="440" y2="185"/>
+    <line x1="480" y1="175" x2="480" y2="185"/><line x1="520" y1="175" x2="520" y2="185"/>
+    <line x1="560" y1="175" x2="560" y2="185"/><line x1="600" y1="175" x2="600" y2="185"/>
+    <line x1="640" y1="175" x2="640" y2="185"/><line x1="680" y1="175" x2="680" y2="185"/>
+    <line x1="720" y1="175" x2="720" y2="185"/><line x1="760" y1="175" x2="760" y2="185"/>
+    <line x1="800" y1="175" x2="800" y2="185"/><line x1="840" y1="175" x2="840" y2="185"/>
+    <line x1="880" y1="175" x2="880" y2="185"/><line x1="920" y1="175" x2="920" y2="185"/>
+    <line x1="960" y1="175" x2="960" y2="185"/><line x1="1000" y1="175" x2="1000" y2="185"/>
+    <line x1="1040" y1="175" x2="1040" y2="185"/><line x1="1080" y1="175" x2="1080" y2="185"/>
+    <line x1="1120" y1="175" x2="1120" y2="185"/><line x1="1160" y1="175" x2="1160" y2="185"/>
+    <line x1="1200" y1="175" x2="1200" y2="185"/><line x1="1240" y1="175" x2="1240" y2="185"/>
+    <line x1="1280" y1="175" x2="1280" y2="185"/><line x1="1320" y1="175" x2="1320" y2="185"/>
+    <line x1="1360" y1="175" x2="1360" y2="185"/><line x1="1400" y1="175" x2="1400" y2="185"/>
+  </g>
+
+  <!-- === INNER CITY === -->
+  <rect x="480" y="260" width="780" height="320" rx="6"
+        fill="rgba(60,40,20,0.3)" stroke="#7a6050" stroke-width="2.5" opacity="0.8"/>
+  <rect x="486" y="266" width="768" height="308" rx="4"
+        fill="none" stroke="#8a7060" stroke-width="1" opacity="0.5"/>
+
+  <!-- === CITY DISTRICTS (Warm amber areas) === -->
+  <!-- Upper district -->
+  <rect x="500" y="280" width="360" height="120" rx="4"
+        fill="rgba(80,45,20,0.35)" stroke="#6a4a2a" stroke-width="1" opacity="0.7"/>
+  <!-- Right district -->
+  <rect x="880" y="280" width="360" height="120" rx="4"
+        fill="rgba(80,45,20,0.3)" stroke="#6a4a2a" stroke-width="1" opacity="0.7"/>
+  <!-- Lower districts -->
+  <rect x="500" y="420" width="220" height="140" rx="4"
+        fill="rgba(90,50,25,0.4)" stroke="#7a5a3a" stroke-width="1" opacity="0.75"/>
+  <rect x="740" y="420" width="220" height="140" rx="4"
+        fill="rgba(90,50,25,0.35)" stroke="#7a5a3a" stroke-width="1" opacity="0.7"/>
+  <rect x="980" y="420" width="240" height="140" rx="4"
+        fill="rgba(85,48,22,0.35)" stroke="#7a5a3a" stroke-width="1" opacity="0.7"/>
+
+  <!-- === MARKET DISTRICT (坊市) === -->
+  <rect x="320" y="520" width="1108" height="130" rx="6"
+        fill="rgba(100,55,30,0.3)" stroke="#8a5a3a" stroke-width="1.5" opacity="0.65"/>
+  <!-- Market grid lines -->
+  <g stroke="#6a4a2a" stroke-width="0.5" opacity="0.4">
+    <line x1="600" y1="520" x2="600" y2="650"/>
+    <line x1="880" y1="520" x2="880" y2="650"/>
+    <line x1="1160" y1="520" x2="1160" y2="650"/>
+    <line x1="320" y1="565" x2="1428" y2="565"/>
+    <line x1="320" y1="605" x2="1428" y2="605"/>
+  </g>
+
+  <!-- === ROADS === -->
+  <!-- Main north-south road -->
+  <line x1="870" y1="186" x2="870" y2="668" stroke="#4a3a2a" stroke-width="12" opacity="0.5"/>
+  <line x1="870" y1="186" x2="870" y2="668" stroke="#6a5a4a" stroke-width="2" opacity="0.3"/>
+  <!-- Main east-west road -->
+  <line x1="306" y1="420" x2="1442" y2="420" stroke="#4a3a2a" stroke-width="12" opacity="0.5"/>
+  <line x1="306" y1="420" x2="1442" y2="420" stroke="#6a5a4a" stroke-width="2" opacity="0.3"/>
+  <!-- Inner roads -->
+  <line x1="680" y1="266" x2="680" y2="580" stroke="#4a3a2a" stroke-width="6" opacity="0.35"/>
+  <line x1="1060" y1="266" x2="1060" y2="580" stroke="#4a3a2a" stroke-width="6" opacity="0.35"/>
+  <line x1="500" y1="340" x2="1260" y2="340" stroke="#4a3a2a" stroke-width="6" opacity="0.35"/>
+
+  <!-- === CITY GATES === -->
+  <!-- South gate (松月门) -->
+  <g transform="translate(870,668)">
+    <rect x="-18" y="-6" width="36" height="16" rx="2" fill="#5a4a3a" stroke="#8a7a6a" stroke-width="1"/>
+    <rect x="-10" y="-6" width="20" height="16" fill="#1a1210"/>
+    <circle cx="870-870" cy="668-668" r="6" fill="var(--marker)" filter="url(#glow)" opacity="0.9"/>
+  </g>
+
+  <!-- North gate (松山门) -->
+  <g transform="translate(870,186)">
+    <rect x="-18" y="-10" width="36" height="16" rx="2" fill="#5a4a3a" stroke="#8a7a6a" stroke-width="1"/>
+    <rect x="-10" y="-10" width="20" height="16" fill="#1a1210"/>
+  </g>
+
+  <!-- East gate -->
+  <g transform="translate(1442,420)">
+    <rect x="-6" y="-16" width="16" height="32" rx="2" fill="#5a4a3a" stroke="#8a7a6a" stroke-width="1"/>
+    <rect x="-6" y="-10" width="16" height="20" fill="#1a1210"/>
+  </g>
+
+  <!-- West gate -->
+  <g transform="translate(306,420)">
+    <rect x="-10" y="-16" width="16" height="32" rx="2" fill="#5a4a3a" stroke="#8a7a6a" stroke-width="1"/>
+    <rect x="-6" y="-10" width="16" height="20" fill="#1a1210"/>
+  </g>
+
+  <!-- Gate marker dots -->
+  <circle cx="870" cy="668" r="5" fill="#e8d498" filter="url(#glow)" opacity="0.9"/>
+  <circle cx="870" cy="186" r="5" fill="#e8d498" filter="url(#glow)" opacity="0.9"/>
+  <circle cx="1442" cy="420" r="5" fill="#e8d498" filter="url(#glow)" opacity="0.9"/>
+  <circle cx="306" cy="420" r="5" fill="#e8d498" filter="url(#glow)" opacity="0.9"/>
+
+  <!-- === LANDMARK MARKERS === -->
+  <!-- 钟鼓楼 (Center) -->
+  <circle cx="870" cy="360" r="8" fill="#f5e8c0" filter="url(#glow-strong)" opacity="0.95"/>
+  <circle cx="870" cy="360" r="3" fill="#fff8e8"/>
+
+  <!-- 文华书院 (Upper-left inner) -->
+  <circle cx="620" cy="320" r="6" fill="#e8d498" filter="url(#glow)" opacity="0.8"/>
+  <!-- 永安桥 (Center bridge) -->
+  <circle cx="870" cy="440" r="6" fill="#e8d498" filter="url(#glow)" opacity="0.8"/>
+  <!-- 梨园戏台 (West market) -->
+  <circle cx="500" cy="570" r="6" fill="#e8d498" filter="url(#glow)" opacity="0.8"/>
+  <!-- 清风茶馆 (East market) -->
+  <circle cx="1100" cy="570" r="6" fill="#e8d498" filter="url(#glow)" opacity="0.8"/>
+  <!-- 烟雨巷 (North market) -->
+  <circle cx="820" cy="550" r="5" fill="#e8d498" filter="url(#glow)" opacity="0.7"/>
+  <!-- 松山寺 (North mountain) -->
+  <circle cx="500" cy="130" r="7" fill="#e8d498" filter="url(#glow)" opacity="0.8"/>
+  <!-- 观潮阁 (East river) -->
+  <circle cx="1450" cy="300" r="6" fill="#e8d498" filter="url(#glow)" opacity="0.8"/>
+  <!-- 夜泊渡 (South dock) -->
+  <circle cx="870" cy="700" r="7" fill="#e8d498" filter="url(#glow)" opacity="0.85"/>
+
+  <!-- Additional scattered markers (small dots for lesser landmarks) -->
+  <g fill="#c4a060" opacity="0.5">
+    <circle cx="560" cy="380" r="2"/><circle cx="700" cy="300" r="2"/>
+    <circle cx="950" cy="300" r="2"/><circle cx="1150" cy="380" r="2"/>
+    <circle cx="560" cy="480" r="2"/><circle cx="700" cy="500" r="2"/>
+    <circle cx="950" cy="500" r="2"/><circle cx="1150" cy="480" r="2"/>
+    <circle cx="400" cy="550" r="2"/><circle cx="600" cy="620" r="2"/>
+    <circle cx="760" cy="560" r="2"/><circle cx="1000" cy="620" r="2"/>
+    <circle cx="1200" cy="560" r="2"/><circle cx="1350" cy="580" r="2"/>
+    <circle cx="420" cy="350" r="2"/><circle cx="1300" cy="300" r="2"/>
+    <circle cx="760" cy="370" r="2"/><circle cx="1000" cy="370" r="2"/>
+  </g>
+
+  <!-- === LABELS === -->
+  <g font-family="'KaiTi','STKaiti','SimKai',serif" fill="#c4a060" font-size="14" opacity="0.85">
+    <!-- District labels -->
+    <text x="680" y="340" text-anchor="middle" fill="#d4b878" font-size="16">内 城</text>
+    <text x="680" y="490" text-anchor="middle" fill="#c4a060">官署区</text>
+    <text x="1060" y="490" text-anchor="middle" fill="#c4a060">官署区</text>
+    <text x="870" y="590" text-anchor="middle" fill="#d4b878" font-size="15">坊 市</text>
+    <text x="510" y="590" text-anchor="middle" font-size="12">西 市</text>
+    <text x="1100" y="590" text-anchor="middle" font-size="12">东 市</text>
+
+    <!-- Gate labels -->
+    <text x="870" y="696" text-anchor="middle" fill="#d4b878" font-size="15">松月门</text>
+    <text x="870" y="172" text-anchor="middle" fill="#d4b878" font-size="15">松山门</text>
+    <text x="1464" y="424" text-anchor="middle" font-size="13">东 门</text>
+    <text x="284" y="424" text-anchor="middle" font-size="13">西 门</text>
+
+    <!-- Landmark labels -->
+    <text x="870" y="352" text-anchor="middle" fill="#e8d498" font-size="16">钟鼓楼</text>
+    <text x="620" y="312" text-anchor="middle" font-size="13">文华书院</text>
+    <text x="870" y="464" text-anchor="middle" font-size="13">永安桥</text>
+    <text x="500" y="595" text-anchor="middle" font-size="13">梨园戏台</text>
+    <text x="1100" y="595" text-anchor="middle" font-size="13">清风茶馆</text>
+    <text x="820" y="540" text-anchor="middle" font-size="11">烟雨巷</text>
+    <text x="500" y="120" text-anchor="middle" font-size="14">松山寺</text>
+    <text x="1480" y="296" text-anchor="middle" font-size="13">观潮阁</text>
+    <text x="870" y="722" text-anchor="middle" font-size="14">夜泊渡</text>
+
+    <!-- Natural features -->
+    <text x="500" y="92" text-anchor="middle" fill="#5a8a5a" font-size="15">松 山</text>
+    <text x="1580" y="420" text-anchor="middle" fill="#5a8a5a" font-size="14">竹 林</text>
+    <text x="100" y="440" text-anchor="middle" fill="#3a7aaa" font-size="15">松 江</text>
+  </g>
+
+  <!-- === COMPASS ROSE === -->
+  <g transform="translate(160,160)">
+    <circle cx="0" cy="0" r="28" fill="none" stroke="#5a4a3a" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="24" fill="none" stroke="#4a3a2a" stroke-width="0.8"/>
+    <line x1="0" y1="-26" x2="0" y2="26" stroke="#8a7a6a" stroke-width="1"/>
+    <line x1="-26" y1="0" x2="26" y2="0" stroke="#8a7a6a" stroke-width="1"/>
+    <polygon points="0,-22 -5,-5 0,-8 5,-5" fill="#c4a060"/>
+    <text x="0" y="-34" text-anchor="middle" fill="#d4b878" font-size="14" font-family="serif">北</text>
+    <text x="0" y="42" text-anchor="middle" fill="#8a7a6a" font-size="11" font-family="serif">南</text>
+    <text x="36" y="4" text-anchor="middle" fill="#8a7a6a" font-size="11" font-family="serif">东</text>
+    <text x="-36" y="4" text-anchor="middle" fill="#8a7a6a" font-size="11" font-family="serif">西</text>
+  </g>
+
+  <!-- === TITLE CARTOUCHE === -->
+  <g transform="translate(1500,100)">
+    <rect x="-70" y="-20" width="140" height="36" rx="4"
+          fill="rgba(10,18,28,.9)" stroke="#8a7a6a" stroke-width="1"/>
+    <text x="0" y="4" text-anchor="middle" fill="#d4b878" font-size="16" font-family="'KaiTi','STKaiti',serif">松夜城全图</text>
+  </g>
+
+  <!-- === SEAL STAMP === -->
+  <g transform="translate(1540,160)">
+    <rect x="-18" y="-18" width="36" height="36" rx="2"
+          fill="rgba(180,40,30,0.7)" stroke="#c04030" stroke-width="1.5"/>
+    <rect x="-14" y="-14" width="28" height="28" fill="none" stroke="rgba(230,200,180,0.6)" stroke-width="0.8"/>
+    <text x="0" y="3" text-anchor="middle" fill="rgba(230,200,180,0.7)" font-size="10" font-family="serif">松夜</text>
+  </g>
+
+  <!-- === RIVER BRIDGES === -->
+  <g stroke="#6a5a4a" stroke-width="3" opacity="0.7">
+    <!-- Bridge marks on river -->
+    <line x1="855" y1="438" x2="885" y2="442"/>
+    <line x1="865" y1="432" x2="875" y2="448"/>
+  </g>
+
+</svg>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#1a5580"></div> 水域</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6b4226"></div> 城区</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2a4a24"></div> 山林</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5a5040"></div> 城墙</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e8d498"></div> 地标</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c4a060"></div> 坊市</div>
+</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// Tooltip on marker hover
+document.querySelectorAll('circle[filter]').forEach(circle => {
+  circle.style.cursor = 'pointer';
+  circle.addEventListener('mouseenter', e => {
+    const label = circle.nextElementSibling;
+    const tooltip = document.getElementById('tooltip');
+    if (label && label.tagName === 'title') {
+      tooltip.textContent = label.textContent;
+      tooltip.style.display = 'block';
+    }
+  });
+  circle.addEventListener('mousemove', e => {
+    const tooltip = document.getElementById('tooltip');
+    tooltip.style.left = (e.pageX + 14) + 'px';
+    tooltip.style.top = (e.pageY - 30) + 'px';
+  });
+  circle.addEventListener('mouseleave', () => {
+    document.getElementById('tooltip').style.display = 'none';
+  });
+});
+</script>
 
 </body>
 </html>
