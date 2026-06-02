@@ -41,7 +41,11 @@ TaskCreate:
 
 Auto-dispatch unassigned tasks:
 ```bash
-python scripts/task_dispatcher.py --state-dir .paperclip --company-dir .
+# Via unified CLI (create + auto-dispatch)
+python scripts/paperclip.py task my-project "Implement JWT login" --type feature
+
+# Or dispatch existing unassigned tasks
+python scripts/task_dispatcher.py --company-dir ./my-project
 ```
 
 Dispatch rules:

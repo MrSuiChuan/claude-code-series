@@ -95,17 +95,22 @@ PaperClip heartbeat for reviewer_01 in company {company_name}.
 
 `scripts/heartbeat_worker.py` provides the runtime helper:
 ```bash
+# Via unified CLI
+python scripts/paperclip.py heartbeat my-project --agent developer
+
+# Or directly
 python scripts/heartbeat_worker.py \
   --agent-id developer_01 \
-  --state-dir .paperclip \
-  --company-dir .
+  --company-dir ./my-project
 ```
 
 ## Monitoring Heartbeats
 
 Check heartbeat health:
 ```bash
-python scripts/heartbeat_worker.py --agent-id all --report-only
+python scripts/paperclip.py status my-project
+# or
+python scripts/heartbeat_worker.py --agent-id all --company-dir ./my-project
 ```
 
 Stale heartbeat detection: if an agent hasn't checked in for 3× its heartbeat interval, flag it as potentially stuck and notify the Board.

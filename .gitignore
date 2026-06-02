@@ -3,3 +3,4 @@ articles/
 /CLAUDE.md
 *.log
 *.tmp
+__pycache__/

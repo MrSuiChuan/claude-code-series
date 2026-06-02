@@ -11,7 +11,11 @@ PaperClip tracks token consumption at multiple levels:
 ### Cost Report
 
 ```bash
-python scripts/cost_reporter.py --state-dir .paperclip --format summary
+# Via unified CLI
+python scripts/paperclip.py budget my-project
+
+# Or directly
+python scripts/cost_reporter.py --company-dir ./my-project --format summary
 ```
 
 Output:

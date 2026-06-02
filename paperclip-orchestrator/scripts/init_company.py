@@ -2,30 +2,49 @@
 """
 PaperClip Company Initializer
 ==============================
-Interactive wizard to create a new PaperClip-managed company/project.
+Creates a new PaperClip-managed company with file-based runtime state.
 
 Usage:
-    python init_company.py [--name NAME] [--output DIR]
+    python init_company.py --name my-project [--budget 500000] [--design vercel]
     python init_company.py --interactive
 """
 
 import os
 import sys
-import yaml
 import json
 import argparse
 from datetime import datetime
 from pathlib import Path
 
+CURRENT_SCHEMA_VERSION = 1
+
 TEMPLATE_DIR = Path(__file__).parent.parent / "assets" / "company_template"
 
 
+def ensure_yaml():
+    """Check that PyYAML is available, give friendly error if not."""
+    try:
+        import yaml  # noqa: F401
+    except ImportError:
+        print(
+            "[ERROR] PyYAML is required. Install it with:\n"
+            "        pip install pyyaml\n"
+            "        or: pip install -r requirements.txt"
+        )
+        sys.exit(1)
+
+
 def create_company(name, output_dir, mission="", daily_budget=500000):
-    """Create a new company configuration from template."""
+    """Create a new company configuration and runtime state directory."""
+    ensure_yaml()
+    import yaml
+
     company_dir = Path(output_dir) / name
+    paperclip_dir = company_dir / ".paperclip"
+
+    # ---- Config files (user-editable) ----
     company_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load and customize company.yaml
     with open(TEMPLATE_DIR / "company.yaml", "r", encoding="utf-8") as f:
         company_config = yaml.safe_load(f)
 
@@ -38,64 +57,105 @@ def create_company(name, output_dir, mission="", daily_budget=500000):
     with open(company_dir / "company.yaml", "w", encoding="utf-8") as f:
         yaml.dump(company_config, f, allow_unicode=True, default_flow_style=False)
 
-    # Copy agents.yaml (can be customized later)
-    with open(TEMPLATE_DIR / "agents.yaml", "r", encoding="utf-8") as f:
-        agents_config = f.read()
-    with open(company_dir / "agents.yaml", "w", encoding="utf-8") as f:
-        f.write(agents_config)
+    for filename in ["agents.yaml", "rules.yaml"]:
+        with open(TEMPLATE_DIR / filename, "r", encoding="utf-8") as f:
+            content = f.read()
+        with open(company_dir / filename, "w", encoding="utf-8") as f:
+            f.write(content)
 
-    # Copy rules.yaml
-    with open(TEMPLATE_DIR / "rules.yaml", "r", encoding="utf-8") as f:
-        rules_config = f.read()
-    with open(company_dir / "rules.yaml", "w", encoding="utf-8") as f:
-        f.write(rules_config)
+    # ---- Runtime state directory (.paperclip/) ----
+    paperclip_dir.mkdir(exist_ok=True)
+    for sub in ["agents", "tasks", "design"]:
+        (paperclip_dir / sub).mkdir(exist_ok=True)
 
-    # Create state directory for runtime data
-    state_dir = company_dir / ".paperclip"
-    state_dir.mkdir(exist_ok=True)
-
-    # Create design directory (for Layer 4)
-    design_dir = state_dir / "design"
-    design_dir.mkdir(exist_ok=True)
-
-    # Initialize state files
-    state = {
+    # company.json — company-level runtime info + schema version
+    company_json = {
+        "schema_version": CURRENT_SCHEMA_VERSION,
         "company": name,
         "created_at": datetime.now().isoformat(),
-        "agents": {},
-        "tasks": {},
-        "budget": {
-            "total_allocated": daily_budget,
-            "spent": 0,
-            "daily_reset": datetime.now().strftime("%Y-%m-%d"),
-        },
         "heartbeats": {},
-        "audit_log": [],
     }
-    with open(state_dir / "state.json", "w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2, ensure_ascii=False)
+    with open(paperclip_dir / "company.json", "w", encoding="utf-8") as f:
+        json.dump(company_json, f, indent=2, ensure_ascii=False)
+
+    # budget.json — budget tracking (only cost_reporter writes this)
+    budget_json = {
+        "total_allocated": daily_budget,
+        "spent": 0,
+        "daily_reset": datetime.now().strftime("%Y-%m-%d"),
+        "alert_threshold": company_config["budget"].get("alert_threshold", 0.8),
+        "per_task_limit": company_config["budget"].get("per_task_limit", 100000),
+    }
+    with open(paperclip_dir / "budget.json", "w", encoding="utf-8") as f:
+        json.dump(budget_json, f, indent=2, ensure_ascii=False)
+
+    # agents/*.json — one file per role, agent writes only its own
+    agents_config = yaml.safe_load(
+        (TEMPLATE_DIR / "agents.yaml").read_text(encoding="utf-8")
+    )
+    for role_id, role_def in agents_config["roles"].items():
+        agent_state = {
+            "role": role_id,
+            "display_name": role_def.get("display_name", role_id),
+            "status": "idle",
+            "tokens_spent": 0,
+            "tasks_completed": 0,
+            "current_task": None,
+            "budget_share": role_def.get("budget_share", 0.2),
+            "max_autonomous_tokens": role_def.get("max_autonomous_tokens", 50000),
+            "last_heartbeat": None,
+        }
+        with open(paperclip_dir / "agents" / f"{role_id}.json", "w", encoding="utf-8") as f:
+            json.dump(agent_state, f, indent=2, ensure_ascii=False)
+
+    # audits.jsonl — empty, append-only
+    (paperclip_dir / "audits.jsonl").touch()
 
     return company_dir
 
 
+def _audit(paperclip_dir, event, detail=""):
+    """Append an event to the audit log (jsonl)."""
+    entry = {
+        "timestamp": datetime.now().isoformat(),
+        "event": event,
+        "detail": detail,
+    }
+    audit_file = Path(paperclip_dir) / "audits.jsonl"
+    with open(audit_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def print_summary(name, company_dir, daily_budget, design_brand=None):
+    design_line = f"\n  Design:     {design_brand}" if design_brand else ""
+    print(f"""
+  PaperClip Company Created!
+  ============================
+  Name:       {name}
+  Location:   {company_dir}
+  Budget:     {daily_budget:,} tokens/day
+  Agents:     5 roles (architect, developer, reviewer,
+              operator, tester){design_line}
+  State:      .paperclip/ (JSON files, no database)
+  ============================
+  Next: paperclip start {name}
+""")
+
+
 def fetch_design(company_dir, brand):
-    """Fetch DESIGN.md for the given brand and place in company's .paperclip/design/."""
-    # Import design_fetcher
     script_dir = Path(__file__).parent
     sys.path.insert(0, str(script_dir))
     from design_fetcher import fetch_brand, BRANDS
 
     if brand == "interactive":
-        print("\n  Available design brands:")
         from design_fetcher import list_brands
         brands = list_brands()
         categories = {}
         for key, info in brands:
             cat = info["category"]
-            if cat not in categories:
-                categories[cat] = []
-            categories[cat].append((key, info))
+            categories.setdefault(cat, []).append((key, info))
 
+        print("\n  Available design brands:")
         for cat, cat_brands in categories.items():
             print(f"\n  [{cat}]")
             for key, info in cat_brands:
@@ -117,26 +177,7 @@ def fetch_design(company_dir, brand):
         print(f"  [WARN] Unknown brand: {brand}. Use 'list' to see available brands.")
 
 
-def print_summary(name, company_dir, daily_budget, design_brand=None):
-    """Print company creation summary."""
-    design_line = ""
-    if design_brand:
-        design_line = f"\n  Design:     {design_brand}"
-    print(f"""
-  PaperClip Company Created!
-  ============================
-  Name:       {name}
-  Location:   {company_dir}
-  Budget:     {daily_budget:,} tokens/day
-  Agents:     5 roles (architect, developer, reviewer,
-              operator, tester){design_line}
-  ============================
-  Next: /paperclip {name} --start
-""")
-
-
 def interactive_wizard():
-    """Interactive setup wizard."""
     print("\n  PaperClip Company Setup Wizard\n  " + "=" * 34)
     name = input("  Company name (kebab-case): ").strip()
     if not name:
@@ -169,16 +210,11 @@ Examples:
     parser.add_argument("--mission", "-m", default="", help="Company mission statement")
     parser.add_argument("--budget", "-b", type=int, default=500000, help="Daily token budget")
     parser.add_argument("--design", "-d", default=None,
-                       help="Design brand from awesome-design-md (e.g. vercel, stripe). Use 'interactive' to browse.")
-    parser.add_argument("--interactive", "-i", action="store_true", help="Interactive mode")
+                       help="Design brand from awesome-design-md. Use 'interactive' to browse.")
 
     args = parser.parse_args()
 
-    if args.interactive:
-        company_dir = interactive_wizard()
-        if args.design:
-            fetch_design(company_dir, args.design)
-    elif args.name:
+    if args.name:
         company_dir = create_company(args.name, args.output, args.mission, args.budget)
         print_summary(args.name, company_dir, args.budget, args.design)
         if args.design:

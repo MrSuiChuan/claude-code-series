@@ -2,61 +2,96 @@
 """
 PaperClip Cost Reporter
 ========================
-Generates cost/budget reports for PaperClip-managed companies.
+Generates cost/budget reports from file-based PaperClip state.
+Aggregates agent/*.json and tasks/*.json into budget summaries.
 
 Usage:
-    python cost_reporter.py --state-dir .paperclip [--format json|text|summary]
+    python cost_reporter.py --company-dir ./my-project [--format summary|json|text]
 """
 
-import os
-import sys
 import json
 import argparse
 from datetime import datetime
 from pathlib import Path
 
 
-def generate_report(state_dir, format="summary"):
-    """Generate cost report from PaperClip state."""
-    state_file = Path(state_dir) / "state.json"
-    if not state_file.exists():
-        print('{"error": "No state file found"}')
-        return
+def _paperclip_dir(company_dir):
+    return Path(company_dir) / ".paperclip"
 
-    with open(state_file, "r", encoding="utf-8") as f:
-        state = json.load(f)
 
-    budget = state.get("budget", {})
-    tasks = state.get("tasks", {})
-    agents = state.get("agents", {})
+def _load_json(path):
+    if path.exists():
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
+def _save_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def generate_report(company_dir, fmt="summary"):
+    """Aggregate budget from agent and task files, write updated budget.json."""
+    pp_dir = _paperclip_dir(company_dir)
+    budget = _load_json(pp_dir / "budget.json") or {}
 
     total = budget.get("total_allocated", 0)
-    spent = budget.get("spent", 0)
+
+    # ---- Aggregate from agent files ----
+    agent_costs = {}
+    total_spent_agents = 0
+    agents_dir = pp_dir / "agents"
+    if agents_dir.exists():
+        for af in agents_dir.glob("*.json"):
+            agent = _load_json(af)
+            if agent:
+                spent = agent.get("tokens_spent", 0)
+                agent_costs[af.stem] = {
+                    "display_name": agent.get("display_name", af.stem),
+                    "spent": spent,
+                    "tasks_completed": agent.get("tasks_completed", 0),
+                    "status": agent.get("status", "idle"),
+                }
+                total_spent_agents += spent
+
+    # ---- Aggregate from task files ----
+    task_costs = []
+    total_tasks = 0
+    completed = 0
+    in_progress = 0
+    tasks_dir = pp_dir / "tasks"
+    if tasks_dir.exists():
+        for tf in tasks_dir.glob("task_*.json"):
+            task = _load_json(tf)
+            if task:
+                total_tasks += 1
+                status = task.get("status", "unknown")
+                if status == "done":
+                    completed += 1
+                elif status == "in_progress":
+                    in_progress += 1
+                task_costs.append({
+                    "task_id": task.get("task_id", tf.stem),
+                    "title": (task.get("title", "") or "")[:50],
+                    "cost": task.get("tokens_spent", 0),
+                    "status": status,
+                    "assignee": task.get("assignee", "unassigned"),
+                })
+
+    task_costs.sort(key=lambda x: x["cost"], reverse=True)
+    spent = total_spent_agents  # Agent tally is authoritative
     remaining = total - spent
     pct = (spent / total * 100) if total > 0 else 0
 
-    # Per-agent cost breakdown
-    agent_costs = {}
-    for agent_id, agent_data in agents.items():
-        agent_costs[agent_id] = {
-            "spent": agent_data.get("tokens_spent", 0),
-            "tasks_completed": agent_data.get("tasks_completed", 0),
-        }
-
-    # Per-task cost breakdown
-    task_costs = []
-    for tid, task in tasks.items():
-        task_costs.append({
-            "task_id": tid,
-            "title": task.get("title", "")[:50],
-            "cost": task.get("tokens_spent", 0),
-            "status": task.get("status", "unknown"),
-            "assignee": task.get("assignee", "unassigned"),
-        })
-    task_costs.sort(key=lambda x: x["cost"], reverse=True)
+    # ---- Update budget.json ----
+    budget["spent"] = spent
+    budget["last_updated"] = datetime.now().isoformat()
+    _save_json(pp_dir / "budget.json", budget)
 
     report = {
         "generated_at": datetime.now().isoformat(),
+        "company": pp_dir.parent.name,
         "budget": {
             "total": total,
             "spent": spent,
@@ -66,14 +101,15 @@ def generate_report(state_dir, format="summary"):
         },
         "agent_costs": agent_costs,
         "top_expensive_tasks": task_costs[:5],
-        "total_tasks": len(tasks),
-        "completed_tasks": sum(1 for t in tasks.values() if t.get("status") == "done"),
-        "in_progress_tasks": sum(1 for t in tasks.values() if t.get("status") == "in_progress"),
+        "total_tasks": total_tasks,
+        "completed_tasks": completed,
+        "in_progress_tasks": in_progress,
     }
 
-    if format == "json":
+    if fmt == "json":
         print(json.dumps(report, indent=2, ensure_ascii=False))
-    elif format == "summary":
+    elif fmt == "summary":
+        b = report["budget"]
         print(f"""
 ╔══════════════════════════════════════╗
 ║   PaperClip Budget Report            ║
@@ -82,11 +118,11 @@ def generate_report(state_dir, format="summary"):
 ║  Spent:           {spent:>10,} tokens     ║
 ║  Remaining:       {remaining:>10,} tokens     ║
 ║  Used:            {pct:>9.1f}%            ║
-║  Status:          {report['budget']['status']:<20s} ║
+║  Status:          {b['status']:<20s} ║
 ╠══════════════════════════════════════╣
-║  Tasks: {report['total_tasks']:>3d} total                      ║
-║         {report['completed_tasks']:>3d} completed                  ║
-║         {report['in_progress_tasks']:>3d} in progress               ║
+║  Tasks: {total_tasks:>3d} total                      ║
+║         {completed:>3d} completed                  ║
+║         {in_progress:>3d} in progress               ║
 ╚══════════════════════════════════════╝
 """)
         if task_costs:
@@ -97,23 +133,22 @@ def generate_report(state_dir, format="summary"):
         if agent_costs:
             print("\n  Per-Agent Costs:")
             for aid, ac in agent_costs.items():
-                print(f"    {aid:<15s}: {ac['spent']:>8,} tokens ({ac['tasks_completed']} tasks)")
-
-    else:  # text
+                print(f"    {ac['display_name']:<10s} ({aid:<12s}): {ac['spent']:>8,} tokens ({ac['tasks_completed']} tasks)")
+    else:
         print(f"PaperClip Budget Report ({datetime.now().strftime('%Y-%m-%d %H:%M')})")
         print(f"Budget: {spent:,}/{total:,} tokens ({pct:.1f}%) - {report['budget']['status']}")
-        print(f"Tasks: {report['completed_tasks']}/{report['total_tasks']} completed, {report['in_progress_tasks']} in progress")
+        print(f"Tasks: {completed}/{total_tasks} completed, {in_progress} in progress")
 
     return report
 
 
 def main():
     parser = argparse.ArgumentParser(description="PaperClip Cost Reporter")
-    parser.add_argument("--state-dir", required=True, help="Path to .paperclip state directory")
-    parser.add_argument("--format", choices=["json", "text", "summary"], default="summary", help="Output format")
+    parser.add_argument("--company-dir", required=True, help="Path to company directory")
+    parser.add_argument("--format", choices=["json", "text", "summary"], default="summary")
 
     args = parser.parse_args()
-    generate_report(args.state_dir, args.format)
+    generate_report(args.company_dir, args.format)
 
 
 if __name__ == "__main__":

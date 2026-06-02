@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "PaperClip Pro - 4-layer AI agent orchestration platform. Manages multi-agent companies with org charts, heartbeat scheduling, task queues, budget tracking, governance rules, engineering quality (TDD/diagnosis/code review), design taste (anti-slop frontend), and brand-aligned design systems (58+ DESIGN.md specs).",
   "author": {
-    "name": "PaperClip AI",
-    "url": "https://github.com/paperclipai/paperclip"
+    "name": "MrSuiChuan",
+    "url": "https://github.com/MrSuiChuan"
   },
   "homepage": "https://github.com/MrSuiChuan/claude-code-series/tree/main/paperclip-orchestrator",
   "repository": "https://github.com/MrSuiChuan/claude-code-series",
@@ -32,6 +32,7 @@
   ],
   "requirements": {
     "python": ">=3.10",
+    "pip": ["pyyaml>=6.0"],
     "optional": [
       "npx skills@latest add mattpocock/skills",
       "npx skills add https://github.com/Leonxlnx/taste-skill"

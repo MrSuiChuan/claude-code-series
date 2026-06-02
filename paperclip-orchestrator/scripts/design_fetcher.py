@@ -257,8 +257,32 @@ def recommend_brands(query, top_n=5):
     return results[:top_n]
 
 
+def _cache_valid(brand_key):
+    """Check if cached DESIGN.md is still fresh (< 24 hours)."""
+    import time
+    cache_file = CACHE_DIR / f"{brand_key}.md"
+    if not cache_file.exists():
+        return False
+    age = time.time() - cache_file.stat().st_mtime
+    return age < 86400  # 24 hours
+
+
+def _read_cache(brand_key):
+    """Read DESIGN.md from local cache."""
+    cache_file = CACHE_DIR / f"{brand_key}.md"
+    if cache_file.exists():
+        return cache_file.read_text(encoding="utf-8")
+    return None
+
+
+def _write_cache(brand_key, content):
+    """Write DESIGN.md to local cache."""
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    (CACHE_DIR / f"{brand_key}.md").write_text(content, encoding="utf-8")
+
+
 def fetch_brand(brand_key, output_dir):
-    """Fetch DESIGN.md and preview files for a brand from GitHub."""
+    """Fetch DESIGN.md and preview files for a brand from GitHub (with local cache)."""
     if not _brand_exists(brand_key):
         print(f'{{"error": "Unknown brand: {brand_key}. Use list/search to find brands."}}')
         return None
@@ -269,17 +293,35 @@ def fetch_brand(brand_key, output_dir):
 
     fetched = []
 
-    # Fetch DESIGN.md
+    # Fetch DESIGN.md — use cache if fresh
     design_url = f"{GITHUB_RAW}/design-md/{brand_key}/DESIGN.md"
-    try:
-        with urllib.request.urlopen(design_url) as resp:
-            content = resp.read().decode("utf-8")
-            design_path = output_path / "DESIGN.md"
-            with open(design_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            fetched.append(str(design_path))
-    except urllib.error.HTTPError as e:
-        print(f'{{"warning": "DESIGN.md not found for {brand_key} (HTTP {e.code})"}}')
+
+    if _cache_valid(brand_key):
+        content = _read_cache(brand_key)
+        design_path = output_path / "DESIGN.md"
+        with open(design_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        fetched.append(str(design_path))
+    else:
+        try:
+            with urllib.request.urlopen(design_url) as resp:
+                content = resp.read().decode("utf-8")
+                _write_cache(brand_key, content)
+                design_path = output_path / "DESIGN.md"
+                with open(design_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                fetched.append(str(design_path))
+        except urllib.error.HTTPError as e:
+            # Fall back to stale cache if available
+            cached = _read_cache(brand_key)
+            if cached:
+                design_path = output_path / "DESIGN.md"
+                with open(design_path, "w", encoding="utf-8") as f:
+                    f.write(cached)
+                fetched.append(str(design_path))
+                print(f'{{"warning": "Using cached DESIGN.md for {brand_key} (HTTP {e.code})"}}')
+            else:
+                print(f'{{"warning": "DESIGN.md not found for {brand_key} (HTTP {e.code})"}}')
 
     # Fetch preview files
     for preview_file in ["preview.html", "preview-dark.html"]:

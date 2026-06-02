@@ -37,43 +37,59 @@ milestones:                    # Project phases (create as tasks)
     order: 3
 ```
 
-## Runtime State (state.json)
+## Runtime State (file-based, no database)
 
+All runtime state stored as JSON files under `.paperclip/`. Each agent writes only its own file,
+eliminating write conflicts.
+
+```
+.paperclip/
+├── company.json       # Company info + schema_version
+├── budget.json        # Budget tracking
+├── audits.jsonl       # Append-only audit log (no write conflicts)
+├── agents/            # One file per agent (each agent writes only its own)
+│   ├── architect.json
+│   ├── developer.json
+│   ├── reviewer.json
+│   ├── tester.json
+│   └── operator.json
+├── tasks/             # One file per task
+│   ├── task_001.json
+│   └── task_002.json
+└── design/            # DESIGN.md cache (optional, Layer 4)
+```
+
+**Agent file example** (`agents/developer.json`):
 ```json
 {
-  "company": "my-project",
-  "created_at": "2026-05-31T...",
-  "agents": {
-    "architect_01": {
-      "role": "architect",
-      "status": "idle",
-      "tokens_spent": 0,
-      "tasks_completed": 0,
-      "current_task": null
-    }
-  },
-  "tasks": {
-    "task_001": {
-      "title": "...",
-      "status": "in_progress",
-      "assignee": "developer_01",
-      "created_at": "...",
-      "tokens_spent": 0
-    }
-  },
-  "budget": {
-    "total_allocated": 500000,
-    "spent": 0,
-    "daily_reset": "2026-05-31"
-  },
-  "heartbeats": {
-    "architect_01": {
-      "cron_job_id": "...",
-      "last_run": "...",
-      "next_run": "..."
-    }
-  },
-  "audit_log": []
+  "role": "developer",
+  "display_name": "开发者",
+  "status": "working",
+  "tokens_spent": 125000,
+  "tasks_completed": 3,
+  "current_task": "task_001",
+  "budget_share": 0.4,
+  "max_autonomous_tokens": 50000,
+  "last_heartbeat": "2026-06-02T14:30:00"
+}
+```
+
+**Task file example** (`tasks/task_001.json`):
+```json
+{
+  "task_id": "task_001",
+  "title": "Implement JWT login",
+  "description": "Add OAuth2 login flow",
+  "type": "feature",
+  "priority": "high",
+  "status": "in_progress",
+  "assignee": "developer",
+  "tokens_spent": 42000,
+  "history": [
+    {"timestamp": "...", "event": "created"},
+    {"timestamp": "...", "event": "dispatched", "assignee": "developer", "score": 18},
+    {"timestamp": "...", "event": "checked_out", "agent": "developer"}
+  ]
 }
 ```
 
@@ -85,7 +101,7 @@ PaperClip supports multiple isolated companies. Each has its own directory:
 companies/
 ├── project-alpha/
 │   ├── company.yaml
-│   └── .paperclip/state.json
+│   └── .paperclip/   (file-based state, no database)
 ├── project-beta/
 │   ├── company.yaml
 │   └── .paperclip/state.json
