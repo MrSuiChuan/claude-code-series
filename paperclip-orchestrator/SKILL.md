@@ -9,27 +9,28 @@ Orchestrate multiple AI agents as a structured "company" — define org charts, 
 
 All state stored as JSON files under `.paperclip/`. No database required.
 
-## Quick Start
+## Command Mapping
 
+When the user invokes `/paperclip`, map their input to `paperclip.py`:
+
+| User Input | Execute |
+|------------|---------|
+| `/paperclip init <name> [--budget N] [--design brand]` | `python scripts/paperclip.py init <name> --budget N` |
+| `/paperclip start <name>` | `python scripts/paperclip.py start <name>` |
+| `/paperclip status <name>` | `python scripts/paperclip.py status <name>` |
+| `/paperclip task <name> "<title>" [--type T] [--priority P]` | `python scripts/paperclip.py task <name> "<title>" --type T --priority P` |
+| `/paperclip budget <name>` | `python scripts/paperclip.py budget <name>` |
+| `/paperclip heartbeat <name> --agent <id>` | `python scripts/paperclip.py heartbeat <name> --agent <id>` |
+| `/paperclip pause <name>` | `python scripts/paperclip.py pause <name>` |
+| `/paperclip resume <name>` | `python scripts/paperclip.py resume <name>` |
+| `/paperclip setup [name] [--pro]` | `python scripts/paperclip.py setup <name>` |
+
+**First run only** — install dependencies:
 ```bash
-# Install dependencies
 pip install -r scripts/requirements.txt
-
-# Create a company
-python scripts/paperclip.py init my-project --budget 500000
-
-# Start orchestration (generates CronCreate prompts)
-python scripts/paperclip.py start my-project
-
-# Create a task (auto-dispatched to best-matching agent)
-python scripts/paperclip.py task my-project "Add user authentication" --type feature
-
-# Check status
-python scripts/paperclip.py status my-project
-
-# Show budget
-python scripts/paperclip.py budget my-project
 ```
+
+`<name>` is the company/project directory. If omitted, use the current directory or ask the user.
 
 ## Core Concepts
 
