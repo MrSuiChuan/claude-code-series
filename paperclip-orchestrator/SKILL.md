@@ -9,26 +9,43 @@ Orchestrate multiple AI agents as a structured "company" — define org charts, 
 
 All state stored as JSON files under `.paperclip/`. No database required.
 
+**Full documentation:** See [README.md](README.md) for quickstart guide, complete walkthrough, and FAQ.
+
+## Two Operating Modes
+
+PaperClip supports two modes. **Prefer Mode B when Python is unavailable** (e.g., sandboxed environments).
+
+### Mode A: Python CLI (automatic)
+
+Run `python scripts/paperclip.py` with the commands below. Requires `pip install pyyaml`.
+
+### Mode B: Manual / File-Based (no Python needed)
+
+Operate directly by reading/writing JSON files under `.paperclip/`. This is the **primary mode** when the Python scripts cannot execute in the current environment.
+
+**How it works:** You (Claude) are the agent executor. Read the agent's state file, check for assigned tasks, sign them out (update status), do the work, update task status, append audit log — all via Read/Write/Edit tools.
+
 ## Command Mapping
 
-When the user invokes `/paperclip`, map their input to `paperclip.py`:
+When the user invokes `/paperclip` or uses natural language commands, map to the appropriate mode:
 
-| User Input | Execute |
-|------------|---------|
-| `/paperclip init <name> [--budget N] [--design brand]` | `python scripts/paperclip.py init <name> --budget N` |
-| `/paperclip start <name>` | `python scripts/paperclip.py start <name>` |
-| `/paperclip status <name>` | `python scripts/paperclip.py status <name>` |
-| `/paperclip task <name> "<title>" [--type T] [--priority P]` | `python scripts/paperclip.py task <name> "<title>" --type T --priority P` |
-| `/paperclip budget <name>` | `python scripts/paperclip.py budget <name>` |
-| `/paperclip heartbeat <name> --agent <id>` | `python scripts/paperclip.py heartbeat <name> --agent <id>` |
-| `/paperclip pause <name>` | `python scripts/paperclip.py pause <name>` |
-| `/paperclip resume <name>` | `python scripts/paperclip.py resume <name>` |
-| `/paperclip setup [name] [--pro]` | `python scripts/paperclip.py setup <name>` |
+| User Input | Mode A (CLI) | Mode B (Manual) |
+|------------|-------------|-----------------|
+| `init <name> [--budget N]` | `python scripts/paperclip.py init <name> --budget N` | Write company.yaml + agents.yaml + rules.yaml + .paperclip/* from templates |
+| `start <name>` | `python scripts/paperclip.py start <name>` | Register 5 CronCreate jobs (one per agent), record IDs in company.json |
+| `status <name>` | `python scripts/paperclip.py status <name>` | Read .paperclip/agents/*.json + tasks/*.json, summarize |
+| `task <name> "<title>" [--type T]` | `python scripts/paperclip.py task <name> "<title>"` | Write a new task_NNN.json with auto-dispatch based on capability match |
+| `budget <name>` | `python scripts/paperclip.py budget <name>` | Read .paperclip/budget.json |
+| `heartbeat <name> --agent <id>` | `python scripts/paperclip.py heartbeat <name>` | Read agent state, check tasks, execute one, update all state files |
+| `pause <name>` | `python scripts/paperclip.py pause <name>` | CronDelete all heartbeat job IDs |
+| `resume <name>` | `python scripts/paperclip.py resume <name>` | Same as start (re-register CronCreate) |
+| `setup [name] [--pro]` | `python scripts/paperclip.py setup <name>` | Init + optionally add external skills |
 
-**First run only** — install dependencies:
-```bash
-pip install -r scripts/requirements.txt
-```
+**Natural language triggers (Mode B):**
+- "启动心跳" → start heartbeats
+- "开始" / "继续" → manually trigger the agent with pending tasks
+- "测试" → trigger tester agent
+- "查看状态" → show dashboard
 
 `<name>` is the company/project directory. If omitted, use the current directory or ask the user.
 
