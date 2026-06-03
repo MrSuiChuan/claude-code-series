@@ -5,6 +5,34 @@
 
 ---
 
+## 前置条件
+
+### 你需要的
+
+| 条件 | 说明 |
+|------|------|
+| **Claude Code** | 已安装并可正常使用 |
+| **安装本插件** | 在 Claude Code 中输入 `/paperclip-orchestrator:paperclip-orchestrator` 即可加载。插件通过 Claude Code 市场自动下载，**不需要手动安装** |
+
+### 你不需要的
+
+| 误区 | 真相 |
+|------|------|
+| ❌ `pip install pyyaml` 不是在安装插件 | PyYAML 只是一个 Python 库，给附带的 CLI 脚本用的。**插件本身已经通过 Claude Code 市场在你电脑上了** |
+| ❌ 不需要数据库 | 所有状态用 JSON 文件存储 |
+| ❌ 不需要启动服务 | Agent 就是 Claude 本身在扮演，没有独立进程 |
+
+### 两种使用模式，选一种即可
+
+| 模式 | 在哪操作 | 依赖 | 适合 |
+|------|---------|------|------|
+| **A: Python CLI** | 终端（会话外） | Python 3 + `pip install pyyaml` | 喜欢命令行，Python 可用 |
+| **B: 自然语言** | Claude Code 对话（会话内） | 无 | Python 不可用，或更习惯对话 |
+
+> **大多数情况下，模式 B 就够了。** 插件的核心是读写 JSON 文件，Python 脚本只是辅助。
+
+---
+
 ## 目录
 
 - [5 分钟快速开始](#5-分钟快速开始)
@@ -22,17 +50,32 @@
 
 ## 5 分钟快速开始
 
-### 第一步：初始化公司
+### 第一步：安装插件
+
+在 Claude Code 中输入：
+
+```
+/paperclip-orchestrator:paperclip-orchestrator
+```
+
+插件从市场自动加载，无需手动下载。
+
+### 第二步：初始化公司
+
+**模式 A — 终端执行：**
 
 ```bash
-# 方式 A：Python CLI（推荐）
-pip install pyyaml
+pip install pyyaml                    # 仅一次，安装 Python YAML 库
 python scripts/paperclip.py init my-project --budget 500000
-
-# 方式 B：手动模式（Python 不可用时）
-# 直接让 Claude 帮你创建，说：
-#   "用 PaperClip 初始化 my-project，预算 500000"
 ```
+
+**模式 B — 对 Claude 说：**
+
+```
+用 PaperClip 初始化 my-project，预算 500000
+```
+
+> `pip install pyyaml` 安装的是 Python 解析 YAML 的库，不是插件本身。只在用终端命令时需要。
 
 初始化后得到：
 
