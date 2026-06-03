@@ -1,7 +1,6 @@
 {
-  "$schema": "https://claude.ai/marketplace-schema.json",
-  "name": "claude-code-series",
-  "description": "MrSuiChuan's Claude Code plugin marketplace — curated skills and tools for AI-powered development",
+  "name": "sui-chuan-tools",
+  "description": "MrSuiChuan's Claude Code tools — orchestration, workflow automation, and project templates.",
   "owner": {
     "name": "MrSuiChuan",
     "url": "https://github.com/MrSuiChuan"
@@ -9,28 +8,10 @@
   "plugins": [
     {
       "name": "paperclip-orchestrator",
-      "description": "PaperClip Pro - 4-layer AI agent orchestration platform: org charts, heartbeat scheduling, task queues, budget tracking, governance, TDD/diagnosis/code review, anti-slop frontend design, and 58+ brand DESIGN.md specs. Turns Claude Code into a multi-agent company.",
-      "version": "1.0.0",
+      "description": "PaperClip Pro - AI agent orchestration platform. Manage multi-agent companies with org charts, heartbeat scheduling, task queues, budget tracking, and governance.",
       "category": "orchestration",
-      "tags": [
-        "agent-orchestration",
-        "multi-agent",
-        "task-management",
-        "heartbeat",
-        "budget-tracking",
-        "governance",
-        "tdd",
-        "code-review",
-        "frontend-design",
-        "design-system"
-      ],
-      "author": {
-        "name": "PaperClip AI",
-        "url": "https://github.com/paperclipai/paperclip"
-      },
       "source": "./paperclip-orchestrator",
-      "homepage": "https://github.com/MrSuiChuan/claude-code-series/tree/main/paperclip-orchestrator",
-      "license": "MIT"
+      "homepage": "https://github.com/MrSuiChuan/claude-code-series/tree/main/paperclip-orchestrator"
     }
   ]
 }
