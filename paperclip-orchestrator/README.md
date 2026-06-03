@@ -7,25 +7,66 @@
 
 ## 前置条件
 
-### 你需要的
+### 第一步：添加插件市场
 
-| 条件 | 说明 |
+PaperClip 来自 **sui-chuan-tools** 第三方市场。首次使用需要注册市场：
+
+编辑 Claude Code 配置文件（`.claude/settings.json` 或 `.claude/settings.local.json`）：
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "sui-chuan-tools": {
+      "source": {
+        "source": "git",
+        "url": "git@github.com:MrSuiChuan/claude-code-series.git"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "paperclip-orchestrator@sui-chuan-tools": true
+  }
+}
+```
+
+| 字段 | 说明 |
 |------|------|
-| **Claude Code** | 已安装并可正常使用 |
-| **安装本插件** | 在 Claude Code 中输入 `/paperclip-orchestrator:paperclip-orchestrator` 即可加载。插件通过 Claude Code 市场自动下载，**不需要手动安装** |
+| `extraKnownMarketplaces` | 注册 `sui-chuan-tools` 市场，指向 GitHub 仓库 |
+| `enabledPlugins` | 在该市场中启用 `paperclip-orchestrator` 插件 |
 
-### 你不需要的
+### 第二步：加载插件
+
+在 Claude Code 会话中输入：
+
+```
+/paperclip-orchestrator:paperclip-orchestrator
+```
+
+Claude Code 会自动从市场拉取插件文件，缓存到本地。**不需要 pip install，不需要 npm install。**
+
+### 架构总览
+
+```
+settings.json
+  ├── extraKnownMarketplaces
+  │     └── sui-chuan-tools → git@github.com:MrSuiChuan/claude-code-series.git
+  │                              └── paperclip-orchestrator/  ← 插件本体
+  └── enabledPlugins
+        └── paperclip-orchestrator@sui-chuan-tools: true  ← 启用
+```
+
+### 你可能不需要的
 
 | 误区 | 真相 |
 |------|------|
-| ❌ `pip install pyyaml` 不是在安装插件 | PyYAML 只是一个 Python 库，给附带的 CLI 脚本用的。**插件本身已经通过 Claude Code 市场在你电脑上了** |
+| ❌ `pip install pyyaml` 不是在安装插件 | PyYAML 只是一个 Python 库。插件通过市场下载，不需要 pip |
 | ❌ 不需要数据库 | 所有状态用 JSON 文件存储 |
 | ❌ 不需要启动服务 | Agent 就是 Claude 本身在扮演，没有独立进程 |
 
 ### 两种使用模式，选一种即可
 
-| 模式 | 在哪操作 | 依赖 | 适合 |
-|------|---------|------|------|
+| 模式 | 在哪操作 | 额外依赖 | 适合 |
+|------|---------|---------|------|
 | **A: Python CLI** | 终端（会话外） | Python 3 + `pip install pyyaml` | 喜欢命令行，Python 可用 |
 | **B: 自然语言** | Claude Code 对话（会话内） | 无 | Python 不可用，或更习惯对话 |
 
@@ -50,17 +91,9 @@
 
 ## 5 分钟快速开始
 
-### 第一步：安装插件
+> 前置条件：已按上面步骤注册 `sui-chuan-tools` 市场并启用插件。
 
-在 Claude Code 中输入：
-
-```
-/paperclip-orchestrator:paperclip-orchestrator
-```
-
-插件从市场自动加载，无需手动下载。
-
-### 第二步：初始化公司
+### 初始化公司
 
 **模式 A — 终端执行：**
 
@@ -507,6 +540,14 @@ A: 编辑 `agents.yaml`，在 `roles:` 下添加新角色，然后创建对应�
 ### Q: 如何迁移/备份？
 
 A: 复制整个项目目录即可。所有状态都在 `.paperclip/` 的 JSON 文件中，零数据库依赖。
+
+### Q: 插件从哪个市场下载？
+
+A: PaperClip 来自 **sui-chuan-tools** 第三方市场，不是 Claude Code 官方内置市场。市场源指向 GitHub 仓库 `MrSuiChuan/claude-code-series`，需要在 `settings.json` 的 `extraKnownMarketplaces` 中注册后才能使用。
+
+### Q: 为什么不放在官方市场 `claude-plugins-official` 里？
+
+A: 官方市场 `claude-plugins-official` 是 Anthropic 维护的集中式插件目录。第三方市场允许开发者自行维护和更新插件，不需要通过 Anthropic 审核。PaperClip 选择独立市场的方式发布。
 
 ### Q: Pro 模式是什么？
 
