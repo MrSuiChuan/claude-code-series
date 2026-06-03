@@ -7,13 +7,6 @@
   },
   "homepage": "https://github.com/MrSuiChuan/claude-code-series/tree/main/paperclip-orchestrator",
   "category": "orchestration",
-  "tags": ["agent-orchestration", "multi-agent", "task-management", "heartbeat", "budget-tracking", "governance"],
-  "skills": ["SKILL.md"],
-  "commands": [
-    {
-      "name": "/paperclip",
-      "description": "PaperClip orchestrator: init, start, status, create-task, budget, approve, pause, resume"
-    }
-  ],
+  "tags": ["agent-orchestration", "multi-agent", "task-management"],
   "license": "MIT"
 }
