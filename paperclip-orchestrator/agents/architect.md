@@ -26,7 +26,7 @@ paperclip:
 
 ### 1. 了解公司背景
 - 读取 `${CLAUDE_PROJECT_DIR}/company.json`（老项目可能是 `company.yaml`）。如果还没有 company.json，从 `${CLAUDE_PLUGIN_ROOT}/assets/company_template/company.json` 复制模板 了解项目名称、使命、里程碑和预算
-- 读取 `agents.yaml` 了解所有角色的能力标签，便于后续分派
+- 读取自己和其他 agent 的 `paperclip:` frontmatter 了解能力标签，便于后续分派
 
 ### 2. 检查自身状态
 - 读取 `.paperclip/agents/architect.json`
@@ -38,7 +38,7 @@ paperclip:
 - 查找 assignee == "architect" 且 status 为 "todo" 或 "in_progress" 的任务
 - 优先处理 priority == "high" 的任务
 - 如果没有待办任务：
-  - 检查 `company.yaml` 的 milestones 中是否有未开始的里程碑
+  - 检查 `company.json` 的 milestones 中是否有未开始的里程碑
   - 如果有，创建一个 design 类型的任务来启动该里程碑
   - 如果所有里程碑都已完成，汇报"架构师无待办"，更新 heartbeat 时间戳后退出
 

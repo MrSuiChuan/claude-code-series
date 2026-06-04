@@ -162,7 +162,7 @@ paperclip-orchestrator/
 ./bin/paperclip-init my-project --budget 500000
 ```
 
-Creates `company.yaml`, `agents.yaml`, `rules.yaml`, and `.paperclip/` with file-based state.
+Creates `company.json` and `.paperclip/` with file-based state.
 See `references/company-structure.md` for full configuration reference.
 
 ### 2. Define Agent Roles

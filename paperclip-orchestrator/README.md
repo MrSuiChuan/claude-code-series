@@ -66,8 +66,9 @@ PaperClip v2.0 从"YAML 配置 + 角色扮演"升级为**真正利用 Claude Cod
 
 ```
 v1.0:  agents.yaml → Claude 读配置 → 临时扮演角色 → 手动收尾
-v2.0:  agents.yaml + agents/*.md → Claude 调用子代理 → hooks 自动收尾
+v2.0:  agents/*.md → Claude 调用子代理 → hooks 自动收尾
 v2.1:  agents/*.md paperclip: → 角色定义唯一来源，agents.yaml 不再生成
+v2.2:  零 Python / 零 YAML / 全部子代理 + hooks
 ```
 
 ### 你可能不需要的
@@ -192,29 +193,15 @@ Agent 会在心跳时自动签出任务。你也可以手动触发：
 
 ## 两种使用模式
 
-### 模式 A：Python CLI（自动模式）
+### 模式 A：对话（主要方式）
 
-如果你能运行 Python：
+在 Claude Code 内直接操作，所有功能通过自然语言或 `/paperclip-*` 指令完成。
+
+### 模式 B：终端
 
 ```bash
-# 初始化
-python scripts/paperclip.py init my-project --budget 500000
-
-# 启动心跳
-python scripts/paperclip.py start my-project
-
-# 创建任务（自动分派）
-python scripts/paperclip.py task my-project "实现登录功能" --type feature
-
-# 查看状态
-python scripts/paperclip.py status my-project
-
-# 查看预算
-python scripts/paperclip.py budget my-project
-
-# 暂停/恢复
-python scripts/paperclip.py pause my-project
-python scripts/paperclip.py resume my-project
+# 快速初始化
+./bin/paperclip-init my-project --budget 500000
 ```
 
 ### 模式 B：手动模式（Python 不可用时）
@@ -616,7 +603,7 @@ A: Pro 模式额外集成：
 - **awesome-design-md**：58+ 品牌 DESIGN.md 规范
 
 ```bash
-python scripts/paperclip.py setup my-project --pro --design vercel
+./bin/paperclip-init my-project --budget 500000
 ```
 
 ---

@@ -46,13 +46,13 @@ A plain-text Markdown design system document from [awesome-design-md](https://gi
 
 ### 1. Discover (Architect)
 ```bash
-python scripts/design_fetcher.py search "dark saas developer"
-python scripts/design_fetcher.py recommend "minimal fintech dashboard"
+paperclip-design-fetcher agent search "dark saas developer"
+paperclip-design-fetcher agent recommend "minimal fintech dashboard"
 ```
 
 ### 2. Select & Fetch (Architect)
 ```bash
-python scripts/design_fetcher.py fetch vercel --output ./my-project
+paperclip-design-fetcher agent fetch vercel --output ./my-project
 # → creates .paperclip/design/DESIGN.md
 # → creates .paperclip/design/brand.json (metadata)
 ```
@@ -117,22 +117,22 @@ Create your own brand spec using the template:
 
 ```bash
 # List all brands
-python scripts/design_fetcher.py list
+paperclip-design-fetcher agent list
 
 # Filter by category
-python scripts/design_fetcher.py list --category "Developer Tools"
+paperclip-design-fetcher agent list --category "Developer Tools"
 
 # Search by vibe/keywords
-python scripts/design_fetcher.py search "dark fintech minimal"
+paperclip-design-fetcher agent search "dark fintech minimal"
 
 # AI-powered recommendation
-python scripts/design_fetcher.py recommend "modern saas dashboard with dark mode"
+paperclip-design-fetcher agent recommend "modern saas dashboard with dark mode"
 
 # Fetch a brand
-python scripts/design_fetcher.py fetch vercel
+paperclip-design-fetcher agent fetch vercel
 
 # Compare multiple brands
-python scripts/design_fetcher.py fetch vercel stripe linear --output ./designs
+paperclip-design-fetcher agent fetch vercel stripe linear --output ./designs
 
 # Init with design
 python scripts/init_company.py --name my-app --design vercel
