@@ -130,7 +130,7 @@ python scripts/paperclip.py init my-project --budget 500000
 
 ```
 my-project/
-├── company.yaml       # 公司配置（可编辑）
+├── company.json       # 公司配置（JSON，可编辑）
 ├── rules.yaml         # 治理规则（可编辑）
 └── .paperclip/        # 运行时状态（自动管理）
     ├── company.json
@@ -281,7 +281,7 @@ v2.0 的 3 个钩子消除了手动簿记工作：
 
 ```
 用户: init my-project --budget 500000
-      → 创建 company.yaml + rules.yaml + .paperclip/
+      → 创建 company.json + .paperclip/
 
 用户: 启动心跳
       → 注册 5 个 CronCreate（每 15 分钟）
@@ -532,17 +532,12 @@ todo → in_progress → in_review → done
 ```
 my-project/                        # ← 你的项目（一个"公司"）
 │
-├── company.yaml                   # 公司配置（可编辑）
+├── company.json                   # 公司配置（JSON，可编辑）
 │   ├── company.name               #   项目名
 │   ├── budget.daily_limit         #   每日预算
 │   ├── governance                 #   审批规则
+│   ├── rules                      #   治理规则
 │   └── milestones                 #   里程碑
-│
-├── rules.yaml                     # 治理规则（可编辑）
-│   ├── budget_enforcement         #   预算执行
-│   ├── approval_workflows         #   审批流
-│   ├── quality_gates              #   质量门
-│   └── autonomy_limits            #   自主权限制
 │
 ├── .paperclip/                    # 运行时状态（自动管理，零数据库）
 │   ├── company.json               #   公司信息 + heartbeat ID

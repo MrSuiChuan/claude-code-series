@@ -48,7 +48,7 @@ When the user invokes `/paperclip` or uses natural language commands, map to the
 
 | User Input | Mode A (CLI) | Mode B (Manual) |
 |------------|-------------|-----------------|
-| `init <name> [--budget N]` | `python scripts/paperclip.py init <name> --budget N` | Write company.yaml + agents.yaml + rules.yaml + .paperclip/* from templates |
+| `init <name> [--budget N]` | `python scripts/paperclip.py init <name> --budget N` | Write company.json + .paperclip/* from templates |
 | `start <name>` | `python scripts/paperclip.py start <name>` | Register 5 CronCreate jobs (one per agent), record IDs in company.json |
 | `status <name>` | `python scripts/paperclip.py status <name>` | Read .paperclip/agents/*.json + tasks/*.json, summarize |
 | `task <name> "<title>" [--type T]` | `python scripts/paperclip.py task <name> "<title>"` | Write a new task_NNN.json with auto-dispatch based on capability match |
@@ -108,8 +108,7 @@ Hooks are defined in `hooks/hooks.json`. They eliminate manual bookkeeping — n
 
 ```
 my-project/
-├── company.yaml           # Company config (user-editable)
-├── rules.yaml             # Governance rules (user-editable)
+├── company.json           # Company config (JSON, user-editable)
 └── .paperclip/            # Runtime state (auto-managed, no database)
     ├── company.json       # Company info + schema_version + heartbeat IDs
     ├── budget.json        # Budget tracking

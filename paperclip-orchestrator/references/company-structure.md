@@ -1,50 +1,57 @@
 # Company Structure Reference
 
-## company.yaml Schema
+## company.json Schema (v2.1)
 
-```yaml
-company:
-  name: "my-project"           # kebab-case identifier
-  display_name: "我的项目"      # Human-readable name
-  mission: "项目使命描述"        # What this company does
-  created_at: "2026-05-31"
-  version: "0.1.0"
-
-budget:
-  currency: "tokens"
-  daily_limit: 500000          # Max tokens per day
-  per_task_limit: 100000       # Max tokens per task
-  alert_threshold: 0.8         # Alert at 80%
-  enforce: true                # Auto-halt when exceeded
-
-governance:
-  approval_required_for:       # Operations needing Board approval
-    - budget_exceeded
-    - production_deploy
-    - data_mutation
-    - external_api_call
-  auto_approve:                # Auto-approved operations
-    - code_review
-    - test_execution
-  board_members: ["user"]
-
-milestones:                    # Project phases (create as tasks)
-  - name: "初始化"
-    order: 1
-  - name: "开发"
-    order: 2
-  - name: "测试"
-    order: 3
+```json
+{
+  "company": {
+    "name": "my-project",
+    "display_name": "我的项目",
+    "mission": "项目使命描述",
+    "created_at": "2026-06-04",
+    "version": "0.1.0"
+  },
+  "budget": {
+    "currency": "tokens",
+    "daily_limit": 500000,
+    "per_task_limit": 100000,
+    "alert_threshold": 0.8,
+    "enforce": true
+  },
+  "governance": {
+    "approval_required_for": [
+      "budget_exceeded",
+      "production_deploy",
+      "data_mutation",
+      "external_api_call"
+    ],
+    "auto_approve": [
+      "code_review",
+      "test_execution"
+    ],
+    "board_members": ["user"]
+  },
+  "rules": {
+    "budget_enforcement": [...],
+    "approval_workflows": [...],
+    "quality_gates": [...],
+    "autonomy_limits": [...]
+  },
+  "milestones": [
+    { "name": "初始化", "description": "...", "order": 1 }
+  ]
+}
 ```
+
+Legacy `company.yaml` and `rules.yaml` are still supported for existing projects but no longer generated for new ones.
 
 ## Runtime State (file-based, no database)
 
-All runtime state stored as JSON files under `.paperclip/`. Each agent writes only its own file,
-eliminating write conflicts.
+All runtime state stored as JSON files under `.paperclip/`. Each agent writes only its own file, eliminating write conflicts.
 
 ```
 .paperclip/
-├── company.json       # Company info + schema_version
+├── company.json       # Company info + schema_version + heartbeat IDs
 ├── budget.json        # Budget tracking
 ├── audits.jsonl       # Append-only audit log (no write conflicts)
 ├── agents/            # One file per agent (each agent writes only its own)
@@ -56,7 +63,7 @@ eliminating write conflicts.
 ├── tasks/             # One file per task
 │   ├── task_001.json
 │   └── task_002.json
-└── design/            # DESIGN.md cache (optional, Layer 4)
+└── design/            # DESIGN.md cache (optional)
 ```
 
 **Agent file example** (`agents/developer.json`):
@@ -100,11 +107,11 @@ PaperClip supports multiple isolated companies. Each has its own directory:
 ```
 companies/
 ├── project-alpha/
-│   ├── company.yaml
-│   └── .paperclip/   (file-based state, no database)
+│   ├── company.json
+│   └── .paperclip/
 ├── project-beta/
-│   ├── company.yaml
-│   └── .paperclip/state.json
+│   ├── company.json
+│   └── .paperclip/
 ```
 
 Switch between companies: `/paperclip switch project-beta`

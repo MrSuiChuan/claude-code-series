@@ -1,0 +1,111 @@
+{
+  "company": {
+    "name": "example-project",
+    "display_name": "示例项目",
+    "mission": "使用 AI 代理协作完成软件开发任务",
+    "created_at": "2026-06-04",
+    "version": "0.1.0"
+  },
+  "budget": {
+    "currency": "tokens",
+    "daily_limit": 500000,
+    "per_task_limit": 100000,
+    "alert_threshold": 0.8,
+    "enforce": true
+  },
+  "governance": {
+    "approval_required_for": [
+      "budget_exceeded",
+      "production_deploy",
+      "data_mutation",
+      "external_api_call"
+    ],
+    "auto_approve": [
+      "code_review",
+      "test_execution"
+    ],
+    "board_members": ["user"]
+  },
+  "rules": {
+    "budget_enforcement": [
+      {
+        "rule": "daily_cap",
+        "description": "每日总预算上限",
+        "action": "当 daily_budget 超过限制时，暂停所有代理心跳并通知董事会",
+        "severity": "critical"
+      },
+      {
+        "rule": "per_task_cap",
+        "description": "单任务预算上限",
+        "action": "当单个任务消耗超过 per_task_limit 时，要求代理申请额外预算审批",
+        "severity": "warning"
+      }
+    ],
+    "approval_workflows": [
+      {
+        "rule": "production_change",
+        "description": "生产环境变更需要审批",
+        "trigger": "任何标记为 production 的操作",
+        "flow": "agent_request → architect_review → board_approval → execute",
+        "timeout_minutes": 60
+      },
+      {
+        "rule": "budget_override",
+        "description": "超预算审批",
+        "trigger": "任务消耗超过预算 80%",
+        "flow": "agent_request → auto_cost_analysis → board_approval",
+        "timeout_minutes": 30
+      },
+      {
+        "rule": "security_sensitive",
+        "description": "安全敏感操作审批",
+        "trigger": "涉及认证、加密、数据删除的操作",
+        "flow": "agent_flag → reviewer_assessment → architect_approval → execute",
+        "timeout_minutes": 120
+      }
+    ],
+    "quality_gates": [
+      {
+        "gate": "code_review_passed",
+        "description": "代码必须通过审查才能合并",
+        "requires": ["reviewer_approval", "test_pass"]
+      },
+      {
+        "gate": "tests_passing",
+        "description": "所有测试必须通过",
+        "requires": ["unit_tests", "integration_tests"]
+      },
+      {
+        "gate": "security_scan",
+        "description": "安全扫描必须通过（关键项目）",
+        "requires": ["no_critical_vulnerabilities"]
+      }
+    ],
+    "autonomy_limits": [
+      {
+        "agent_level": "leadership",
+        "max_tokens_per_action": 80000,
+        "can_delegate": true,
+        "can_approve": ["code_review", "test_execution"]
+      },
+      {
+        "agent_level": "execution",
+        "max_tokens_per_action": 50000,
+        "can_delegate": false,
+        "can_approve": []
+      },
+      {
+        "agent_level": "quality",
+        "max_tokens_per_action": 40000,
+        "can_delegate": true,
+        "can_approve": ["test_execution"]
+      }
+    ]
+  },
+  "milestones": [
+    { "name": "项目初始化", "description": "搭建项目骨架和基础配置", "order": 1 },
+    { "name": "核心功能开发", "description": "实现核心业务逻辑", "order": 2 },
+    { "name": "测试与审查", "description": "完成测试覆盖和代码审查", "order": 3 },
+    { "name": "发布上线", "description": "部署到生产环境", "order": 4 }
+  ]
+}
