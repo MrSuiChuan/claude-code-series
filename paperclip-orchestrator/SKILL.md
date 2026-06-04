@@ -28,44 +28,52 @@ How it works:
 
 ## Two Operating Modes
 
-PaperClip supports two modes. **Prefer Mode B when Python is unavailable** (e.g., sandboxed environments).
+### Mode A: Dialogue (primary, no dependencies)
 
-### Mode A: Python CLI (automatic)
+All operations happen in Claude Code conversation. Use natural language or slash commands:
 
-Run `python scripts/paperclip.py` with the commands below. Requires `pip install pyyaml`.
+| Operation | How |
+|-----------|-----|
+| Init company | `/paperclip-init` or "用 PaperClip 初始化 my-project" |
+| Dashboard | `/paperclip-status` |
+| Create task | "创建任务 '标题' --type feature" |
+| Execute | "开始" — Claude invokes the matching sub-agent |
+| Budget | `python scripts/cost_reporter.py --company-dir ./my-project` |
 
-### Mode B: Manual / File-Based (no Python needed)
+### Mode B: Terminal CLI
 
-Operate directly by reading/writing JSON files under `.paperclip/`. This is the **primary mode** when the Python scripts cannot execute in the current environment.
+```bash
+# Quick init
+./bin/paperclip-init my-project --budget 500000
 
-**How it works:** You (Claude) invoke the appropriate `paperclip-*` sub-agent via the Agent tool. Each sub-agent has its own context window, model, and tool permissions. Sub-agents read their state file, check for assigned tasks, sign them out, do the work, and update status. Hooks handle audit logging and heartbeat timestamps automatically.
+# Budget report
+python scripts/cost_reporter.py --company-dir ./my-project
 
-**Discover sub-agents:** Type `/agents` to see all 6 paperclip sub-agents.
+# Fetch design brand
+python scripts/design_fetcher.py fetch vercel --output ./my-project
+```
+
+No `pip install` required. Zero Python dependencies (PyYAML removed in v2.1).
 
 ## Command Mapping
 
-When the user invokes `/paperclip` or uses natural language commands, map to the appropriate mode:
+| User Input | Execution |
+|------------|-----------|
+| `init <name> [--budget N]` | Write company.json from template + .paperclip/* |
+| `start <name>` | Register CronCreate jobs (one per agent), record IDs in company.json |
+| `status <name>` | Read .paperclip/agents/*.json + tasks/*.json, summarize |
+| `task <name> "<title>" [--type T]` | Write task_NNN.json with auto-dispatch |
+| `budget <name>` | `python scripts/cost_reporter.py --company-dir ./<name>` |
+| `heartbeat <name> --agent <id>` | Invoke paperclip-<role> sub-agent via Agent tool |
+| `pause <name>` | CronDelete all heartbeat job IDs |
+| `resume <name>` | Same as start (re-register CronCreate) |
 
-| User Input | Mode A (CLI) | Mode B (Manual) |
-|------------|-------------|-----------------|
-| `init <name> [--budget N]` | `python scripts/paperclip.py init <name> --budget N` | Write company.json + .paperclip/* from templates |
-| `start <name>` | `python scripts/paperclip.py start <name>` | Register 5 CronCreate jobs (one per agent), record IDs in company.json |
-| `status <name>` | `python scripts/paperclip.py status <name>` | Read .paperclip/agents/*.json + tasks/*.json, summarize |
-| `task <name> "<title>" [--type T]` | `python scripts/paperclip.py task <name> "<title>"` | Write a new task_NNN.json with auto-dispatch based on capability match |
-| `budget <name>` | `python scripts/paperclip.py budget <name>` | Read .paperclip/budget.json |
-| `heartbeat <name> --agent <id>` | `python scripts/paperclip.py heartbeat <name>` | Invoke paperclip-<role> sub-agent via Agent tool |
-| `pause <name>` | `python scripts/paperclip.py pause <name>` | CronDelete all heartbeat job IDs |
-| `resume <name>` | `python scripts/paperclip.py resume <name>` | Same as start (re-register CronCreate) |
-| `setup [name] [--pro]` | `python scripts/paperclip.py setup <name>` | Init + optionally add external skills |
-
-**Natural language triggers (Mode B):**
+**Natural language triggers:**
 - "启动心跳" → start heartbeats
 - "开始" / "继续" → invoke paperclip sub-agent with pending tasks
 - "测试" → invoke paperclip-tester
 - "查看状态" → show dashboard
 - `/agents` → discover all 6 paperclip sub-agents
-
-`<name>` is the company/project directory. If omitted, use the current directory or ask the user.
 
 ## Six Native Sub-Agents
 
@@ -151,7 +159,7 @@ paperclip-orchestrator/
 ### 1. Initialize a Company
 
 ```bash
-python scripts/paperclip.py init my-project --budget 500000
+./bin/paperclip-init my-project --budget 500000
 ```
 
 Creates `company.yaml`, `agents.yaml`, `rules.yaml`, and `.paperclip/` with file-based state.
@@ -165,8 +173,8 @@ The legacy `agents.yaml` is no longer generated for new companies, but existing 
 
 ### 3. Schedule Heartbeats
 
-```bash
-python scripts/paperclip.py start my-project
+```
+"启动心跳"（在对话中对 Claude 说）
 ```
 
 Registers CronCreate jobs. At each heartbeat, Claude invokes the corresponding `paperclip-*` sub-agent.
@@ -178,13 +186,8 @@ See `references/heartbeat-system.md` for scheduling patterns.
 
 Lifecycle: `todo → in_progress → in_review → done`
 
-```bash
-# Create and auto-dispatch
-python scripts/paperclip.py task my-project "Implement JWT login" --type feature
-
-# Or use the dispatcher directly
-python scripts/task_dispatcher.py --company-dir ./my-project
-python scripts/task_dispatcher.py --company-dir ./my-project --create --title "Fix login bug" --type bug
+```
+"创建任务 'Implement JWT login' --type feature"（在对话中对 Claude 说）
 ```
 
 See `references/task-lifecycle.md` for complete lifecycle.
@@ -192,8 +195,6 @@ See `references/task-lifecycle.md` for complete lifecycle.
 ### 5. Track Budget
 
 ```bash
-python scripts/paperclip.py budget my-project
-# or directly:
 python scripts/cost_reporter.py --company-dir ./my-project --format summary
 ```
 
@@ -221,11 +222,9 @@ PaperClip Pro integrates four skill layers for production-grade agent teams:
 ### Quick Setup (Pro)
 
 ```bash
-# One-command full setup with external skills
-python scripts/paperclip.py setup my-project --pro --budget 500000
-
-# Init with a design brand — v2.0: design-fetcher agent auto-fetches DESIGN.md
-python scripts/paperclip.py init my-app --design vercel
+# Init with a design brand — v2.2: design-fetcher agent auto-fetches DESIGN.md
+./bin/paperclip-init my-app --budget 500000
+python scripts/design_fetcher.py fetch vercel --output ./my-app
 
 # Browse and select a brand
 python scripts/design_fetcher.py search "dark saas"

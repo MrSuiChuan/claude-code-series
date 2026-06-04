@@ -82,10 +82,10 @@ v2.1:  agents/*.md paperclip: → 角色定义唯一来源，agents.yaml 不再�
 
 | 模式 | 在哪操作 | 额外依赖 | 适合 |
 |------|---------|---------|------|
-| **A: Python CLI** | 终端（会话外） | Python 3 + `pip install pyyaml` | 喜欢命令行，Python 可用 |
-| **B: 自然语言** | Claude Code 对话（会话内） | 无 | Python 不可用，或更习惯对话 |
+| **A: 对话** | Claude Code 对话（会话内） | 无 | 主要使用方式 |
+| **B: 终端** | 终端（会话外） | Python 3 | 预算报告、设计品牌获取 |
 
-> **大多数情况下，模式 B 就够了。** 插件的核心是读写 JSON 文件，Python 脚本只是辅助。
+> **大多数情况下，对话模式就够了。** 插件的核心是子代理 + hooks + JSON 文件。
 
 ---
 
@@ -111,20 +111,19 @@ v2.1:  agents/*.md paperclip: → 角色定义唯一来源，agents.yaml 不再�
 
 ### 初始化公司
 
-**模式 A — 终端执行：**
-
-```bash
-pip install pyyaml                    # 仅一次，安装 Python YAML 库
-python scripts/paperclip.py init my-project --budget 500000
-```
-
-**模式 B — 对 Claude 说：**
+**模式 A — 对 Claude 说：**
 
 ```
 用 PaperClip 初始化 my-project，预算 500000
 ```
 
-> `pip install pyyaml` 安装的是 Python 解析 YAML 的库，不是插件本身。只在用终端命令时需要。
+**模式 B — 终端执行：**
+
+```bash
+./bin/paperclip-init my-project --budget 500000
+```
+
+> 无需 `pip install`。PyYAML 已在 v2.1 移除，全部使用 JSON。
 
 初始化后得到：
 

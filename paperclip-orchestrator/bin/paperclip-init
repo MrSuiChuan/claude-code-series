@@ -3,7 +3,7 @@
 import sys, json, os
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).parent.parent
+SCRIPT_DIR = Path(__file__).parent.parent  # bin/ → plugin root
 TEMPLATE = SCRIPT_DIR / "assets" / "company_template" / "company.json"
 
 def init_company(name: str, budget: int = 500000):

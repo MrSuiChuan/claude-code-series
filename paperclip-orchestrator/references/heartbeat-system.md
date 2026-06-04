@@ -1,116 +1,69 @@
-# Heartbeat Scheduling System
+# Heartbeat Scheduling System (v2.2)
 
 ## Overview
 
-PaperClip agents operate in short execution windows called "heartbeats" — they wake on a schedule, check their inbox, execute tasks, report status, and exit. This prevents runaway execution and enables cost control.
+PaperClip uses two complementary mechanisms for agent scheduling:
 
-## Heartbeat Protocol
+1. **Hooks-based heartbeat** (primary, v2.2): `SubagentStop` hook automatically updates `last_heartbeat` whenever a paperclip sub-agent finishes execution.
+2. **CronCreate heartbeat** (optional, v1.0): Register CronCreate jobs that fire every 15 minutes. Each heartbeat invokes the corresponding `paperclip-*` sub-agent.
 
-Each heartbeat follows this exact sequence:
+**Recommendation:** Use hooks for automatic timestamp tracking. Use CronCreate only when you need periodic task polling (e.g., agents should wake up and check for new tasks without user intervention).
 
-1. **Wake**: CronCreate triggers the agent
-2. **Identity Check**: Read agent role and budget from state
-3. **Approval Follow-up**: Check for pending Board approvals
-4. **Get Inbox**: Read assigned tasks, sorted by priority
-5. **Prioritize**: in_progress > in_review > todo > blocked
-6. **Checkout**: Atomically claim the highest-priority task
-7. **Execute**: Do the work, leave progress in task description
-8. **Report**: Update task status and budget tracking
-9. **Exit**: Release unclaimed resources
+## Heartbeat Protocol (v2.2)
 
-## Cron Patterns
+When a sub-agent (e.g., `paperclip-architect`) is invoked:
 
-### High-Frequency Agents (every 5-10 min)
-For critical path agents that need quick response:
+1. **Invoke**: User says "开始" or CronCreate fires → Claude invokes sub-agent
+2. **Identity**: Sub-agent reads its own `paperclip:` frontmatter for role definition
+3. **State Check**: Reads `.paperclip/agents/<role>.json` for current status
+4. **Inbox**: Scans `.paperclip/tasks/` for assigned todo/in_progress tasks
+5. **Checkout**: Updates task status → in_progress, agent status → working
+6. **Execute**: Performs the work (design, implement, review, test, deploy)
+7. **Complete**: Updates task status → in_review or done
+8. **Hook fires**: `SubagentStop` hook auto-updates `last_heartbeat` timestamp
+9. **Audit**: `PostToolUse` hook auto-appends to `audits.jsonl` on status changes
+
+## CronCreate Patterns (optional)
+
+### Standard-Frequency Agents (every 15 min)
 ```
 CronCreate:
-  cron: "*/5 * * * *"    # Every 5 minutes
-  prompt: "PaperClip heartbeat for developer_01"
+  cron: "*/15 * * * *"
+  prompt: "PaperClip heartbeat for architect. Invoke paperclip-orchestrator:paperclip-architect."
   recurring: true
 ```
 
-### Standard-Frequency Agents (every 15-30 min)
-For regular development and review work:
-```
-CronCreate:
-  cron: "*/15 * * * *"   # Every 15 minutes
-  prompt: "PaperClip heartbeat for architect_01"
-  recurring: true
-```
-
-### Low-Frequency Agents (hourly/daily)
-For reporting, maintenance, and monitoring:
-```
-CronCreate:
-  cron: "7 * * * *"      # Every hour at :07
-  prompt: "PaperClip heartbeat for operator_01"
-  recurring: true
-```
-
-### One-Shot Heartbeats
-For manual triggers and urgent tasks:
-```
-CronCreate:
-  cron: "30 14 31 5 *"   # Specific time
-  prompt: "PaperClip urgent: deploy hotfix"
-  recurring: false
-```
+### Manual Trigger (preferred for v2.2)
+No CronCreate needed. The user triggers agents on demand:
+- "开始" / "继续" → invoke sub-agent with pending tasks
+- "测试" → invoke paperclip-tester
+- "审查" → invoke paperclip-reviewer
 
 ## Agent-Specific Heartbeat Prompts
 
-### Architect Heartbeat
+### Architect
 ```
-PaperClip heartbeat for architect_01 in company {company_name}.
-1. Check for pending approvals
-2. Review in_progress tasks for architectural alignment
-3. Decompose new requirements into tasks
-4. Assign tasks to developers based on capability match
-5. Report status and exit
+PaperClip heartbeat for architect in company {company_name}.
+Invoke paperclip-orchestrator:paperclip-architect sub-agent.
 ```
 
-### Developer Heartbeat
+### Developer
 ```
-PaperClip heartbeat for developer_01 in company {company_name}.
-1. Check inbox for assigned tasks
-2. If task in_progress: continue work, update progress
-3. If no active task: checkout highest-priority todo
-4. Execute task (implement, fix, refactor)
-5. If complete: update status to in_review with implementation notes
-6. If blocked: update status to blocked with blocker description
-7. Report status and exit
+PaperClip heartbeat for developer in company {company_name}.
+Invoke paperclip-orchestrator:paperclip-developer sub-agent.
 ```
 
-### Reviewer Heartbeat
+### Reviewer
 ```
-PaperClip heartbeat for reviewer_01 in company {company_name}.
-1. Check for in_review tasks
-2. Review code for correctness, security, style
-3. Use /code-review for systematic analysis
-4. If passes: mark done, leave approval comment
-5. If fails: create sub-tasks for fixes, mark in_progress
-6. Report status and exit
-```
-
-## Heartbeat Worker Script
-
-`scripts/heartbeat_worker.py` provides the runtime helper:
-```bash
-# Via unified CLI
-python scripts/paperclip.py heartbeat my-project --agent developer
-
-# Or directly
-python scripts/heartbeat_worker.py \
-  --agent-id developer_01 \
-  --company-dir ./my-project
+PaperClip heartbeat for reviewer in company {company_name}.
+Check for in_review tasks. Invoke paperclip-orchestrator:paperclip-reviewer sub-agent.
 ```
 
 ## Monitoring Heartbeats
 
 Check heartbeat health:
-```bash
-python scripts/paperclip.py status my-project
-# or
-python scripts/heartbeat_worker.py --agent-id all --company-dir ./my-project
+```
+/paperclip-status  → show all agent statuses + last_heartbeat timestamps
 ```
 
-Stale heartbeat detection: if an agent hasn't checked in for 3× its heartbeat interval, flag it as potentially stuck and notify the Board.
+Stale heartbeat detection: if an agent's `last_heartbeat` is more than 3× its expected interval old, the dashboard flags it.
