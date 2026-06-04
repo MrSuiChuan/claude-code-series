@@ -55,13 +55,27 @@ settings.json
         └── paperclip-orchestrator@sui-chuan-tools: true  ← 启用
 ```
 
+### 🆕 v2.0 亮点：原生子代理 + 自动化钩子
+
+PaperClip v2.0 从"YAML 配置 + 角色扮演"升级为**真正利用 Claude Code 插件系统能力**：
+
+| 新特性 | 说明 | 效果 |
+|--------|------|------|
+| **6 个原生子代理** | `agents/*.md` — 每个角色有独立上下文窗口 | `/agents` 可发现，模型独立选择，权限隔离 |
+| **3 个自动化钩子** | `hooks/hooks.json` — 审计、心跳、仪表盘自动化 | 不再手动写 audit log，不再手动更新心跳时间 |
+
+```
+v1.0:  agents.yaml → Claude 读配置 → 临时扮演角色 → 手动收尾
+v2.0:  agents.yaml + agents/*.md → Claude 调用子代理 → hooks 自动收尾
+```
+
 ### 你可能不需要的
 
 | 误区 | 真相 |
 |------|------|
 | ❌ `pip install pyyaml` 不是在安装插件 | PyYAML 只是一个 Python 库。插件通过市场下载，不需要 pip |
 | ❌ 不需要数据库 | 所有状态用 JSON 文件存储 |
-| ❌ 不需要启动服务 | Agent 就是 Claude 本身在扮演，没有独立进程 |
+| ❌ 不需要启动服务 | v2.0 Agent 是原生子代理，有独立上下文，但仍是 Claude 在执行 |
 
 ### 两种使用模式，选一种即可
 
@@ -76,6 +90,7 @@ settings.json
 
 ## 目录
 
+- [🆕 v2.0 原生子代理](#-v20-原生子代理)
 - [5 分钟快速开始](#5-分钟快速开始)
 - [核心概念](#核心概念)
 - [两种使用模式](#两种使用模式)
@@ -220,9 +235,48 @@ Claude 会直接读写 `.paperclip/` 下的 JSON 文件来管理所有状态，�
 
 ---
 
+## 🆕 v2.0 原生子代理
+
+PaperClip v2.0 提供了 6 个原生 Claude Code 子代理。输入 `/agents` 可查看全部。
+
+### 子代理一览
+
+| 子代理 | 模型 | 最大轮次 | 触发场景 |
+|--------|------|---------|---------|
+| `paperclip-architect` | opus | 30 | design 任务、架构设计、任务拆解 |
+| `paperclip-developer` | sonnet | 25 | feature/bug/refactor/docs 任务 |
+| `paperclip-reviewer` | sonnet | 20 | review/security 任务、in_review 状态 |
+| `paperclip-tester` | sonnet | 20 | test 任务、编写测试用例 |
+| `paperclip-operator` | sonnet | 15 | deploy 任务、监控运维 |
+| `paperclip-design-fetcher` | haiku | 10 | 初始化时获取品牌 DESIGN.md |
+
+### 子代理 vs agents.yaml
+
+```
+agents.yaml           → 角色定义的"数据源"（能力标签、预算、prompt）
+agents/*.md           → 执行层（独立上下文、模型选择、工具权限）
+.paperclip/agents/*.json → 运行时状态（status、current_task、heartbeat）
+```
+
+三者各司其职。`agents.yaml` 可以手动编辑来调整角色能力，`agents/*.md` 控制子代理的执行行为，`.paperclip/agents/*.json` 追踪运行状态。
+
+### 自动化钩子
+
+v2.0 的 3 个钩子消除了手动簿记工作：
+
+| 钩子 | 触发事件 | 自动操作 |
+|------|---------|---------|
+| 仪表盘 | `SessionStart` | 检测到 `.paperclip/` 时自动展示公司状态 |
+| 审计 | `PostToolUse` | 任务状态变更时自动追加 audits.jsonl |
+| 心跳 | `SubagentStop` | 子代理结束时自动更新 last_heartbeat |
+
+---
+
 ## 完整实战：搭建一个全栈项目
 
-以下是一次真实的 PaperClip 运行记录，展示完整的 **架构 → 开发 → 审查 → 修复 → 测试** 闭环。
+以下是一次真实的 PaperClip 运行记录（v1.0 模式），展示完整的 **架构 → 开发 → 审查 → 修复 → 测试** 闭环。
+
+> v2.0 中，每个"回合"由对应的原生子代理执行，hooks 自动处理审计和时间戳。
 
 ### 回合 1：初始化 + 架构
 
@@ -533,9 +587,21 @@ A: 不会。每个 Agent 只写自己的 `<role>.json` 文件，任务文件通�
 
 A: Agent 唤醒后如果没有任务，只读一个 JSON 文件就退出（< 100 tokens）。有任务时才消耗预算。建议设置合理的 `daily_limit`。
 
+### Q: agents.yaml 和 agents/ 目录有什么区别？
+
+A: `agents.yaml` 是**数据源**——定义角色名称、能力标签、预算配比和 prompt。`agents/` 目录是 v2.0 新增的**执行层**——每个 `.md` 文件是一个真正的 Claude Code 子代理，有独立的上下文窗口、模型选择和工具权限。子代理启动时会读取 `agents.yaml` 获取自己的角色定义。两者配合使用，不是替代关系。
+
+### Q: 如何查看和调用子代理？
+
+A: 输入 `/agents` 查看全部 6 个 paperclip 子代理。Claude 会根据任务上下文自动调用，你也可以手动指定——比如"让 paperclip-reviewer 审查 task_007"。
+
+### Q: v2.0 的 hooks 会自动处理什么？
+
+A: 三个钩子完全自动化了原本手动的簿记工作——`SessionStart` 自动展示仪表盘，`PostToolUse` 自动追加审计日志，`SubagentStop` 自动更新心跳时间戳。你再也不用在每个任务完成后手动写 `audits.jsonl` 了。
+
 ### Q: 如何添加自定义角色？
 
-A: 编辑 `agents.yaml`，在 `roles:` 下添加新角色，然后创建对应的 `.paperclip/agents/<role>.json` 状态文件。
+A: 1) 编辑 `agents.yaml`，在 `roles:` 下添加新角色；2) 在 `agents/` 下创建对应的 `.md` 子代理文件；3) 创建对应的 `.paperclip/agents/<role>.json` 状态文件。
 
 ### Q: 如何迁移/备份？
 

@@ -1,15 +1,30 @@
 ---
 name: paperclip-orchestrator
-description: PaperClip Orchestrator - AI agent orchestration platform for managing multi-agent companies with org charts, heartbeat scheduling, task queues, budget tracking, and governance. Use when the user wants to orchestrate AI agents as a structured team, set up recurring agent check-ins, manage multi-agent projects, or create agent workflows. Triggers on /paperclip, "agent company", "orchestrate agents", "agent team".
+description: PaperClip Orchestrator v2.0 — AI agent orchestration platform with 6 native sub-agents, automated hooks, heartbeat scheduling, task queues, and budget governance. Use when the user wants to orchestrate AI agents as a structured team, set up recurring agent check-ins, manage multi-agent projects, or create agent workflows. Triggers on /paperclip, "agent company", "orchestrate agents", "agent team".
 ---
 
-# PaperClip Orchestrator
+# PaperClip Orchestrator v2.0
 
 Orchestrate multiple AI agents as a structured "company" — define org charts, assign roles, schedule heartbeats, manage task queues, enforce budgets, and govern autonomous workflows.
 
 All state stored as JSON files under `.paperclip/`. No database required.
 
 **Full documentation:** See [README.md](README.md) for quickstart guide, complete walkthrough, and FAQ.
+
+## v2.0 New: Native Sub-Agents & Hooks
+
+PaperClip v2.0 ships with **6 native Claude Code sub-agents** and **3 automation hooks**. `/agents` to discover, hooks run automatically.
+
+| Component | Count | Details |
+|-----------|-------|---------|
+| **Sub-Agents** (`agents/`) | 6 | architect (opus), developer, reviewer, tester, operator (sonnet), design-fetcher (haiku) |
+| **Hooks** (`hooks/hooks.json`) | 3 | SessionStart dashboard, PostToolUse audit, SubagentStop heartbeat |
+
+How it works:
+1. User creates a task → auto-dispatched to matching agent role
+2. Heartbeat fires → Claude invokes the **native sub-agent** (e.g., `paperclip-architect`) with independent context
+3. Sub-agent reads its state from `.paperclip/`, executes the task, updates status
+4. Hooks auto-append audit logs and update heartbeat timestamps — no manual bookkeeping
 
 ## Two Operating Modes
 
@@ -23,7 +38,9 @@ Run `python scripts/paperclip.py` with the commands below. Requires `pip install
 
 Operate directly by reading/writing JSON files under `.paperclip/`. This is the **primary mode** when the Python scripts cannot execute in the current environment.
 
-**How it works:** You (Claude) are the agent executor. Read the agent's state file, check for assigned tasks, sign them out (update status), do the work, update task status, append audit log — all via Read/Write/Edit tools.
+**How it works:** You (Claude) invoke the appropriate `paperclip-*` sub-agent via the Agent tool. Each sub-agent has its own context window, model, and tool permissions. Sub-agents read their state file, check for assigned tasks, sign them out, do the work, and update status. Hooks handle audit logging and heartbeat timestamps automatically.
+
+**Discover sub-agents:** Type `/agents` to see all 6 paperclip sub-agents.
 
 ## Command Mapping
 
@@ -36,43 +53,69 @@ When the user invokes `/paperclip` or uses natural language commands, map to the
 | `status <name>` | `python scripts/paperclip.py status <name>` | Read .paperclip/agents/*.json + tasks/*.json, summarize |
 | `task <name> "<title>" [--type T]` | `python scripts/paperclip.py task <name> "<title>"` | Write a new task_NNN.json with auto-dispatch based on capability match |
 | `budget <name>` | `python scripts/paperclip.py budget <name>` | Read .paperclip/budget.json |
-| `heartbeat <name> --agent <id>` | `python scripts/paperclip.py heartbeat <name>` | Read agent state, check tasks, execute one, update all state files |
+| `heartbeat <name> --agent <id>` | `python scripts/paperclip.py heartbeat <name>` | Invoke paperclip-<role> sub-agent via Agent tool |
 | `pause <name>` | `python scripts/paperclip.py pause <name>` | CronDelete all heartbeat job IDs |
 | `resume <name>` | `python scripts/paperclip.py resume <name>` | Same as start (re-register CronCreate) |
 | `setup [name] [--pro]` | `python scripts/paperclip.py setup <name>` | Init + optionally add external skills |
 
 **Natural language triggers (Mode B):**
 - "启动心跳" → start heartbeats
-- "开始" / "继续" → manually trigger the agent with pending tasks
-- "测试" → trigger tester agent
+- "开始" / "继续" → invoke paperclip sub-agent with pending tasks
+- "测试" → invoke paperclip-tester
 - "查看状态" → show dashboard
+- `/agents` → discover all 6 paperclip sub-agents
 
 `<name>` is the company/project directory. If omitted, use the current directory or ask the user.
 
+## Six Native Sub-Agents
+
+| Sub-Agent | `/agents` Name | Model | Max Turns | Use When |
+|-----------|---------------|-------|-----------|----------|
+| 🏗️ Architect | `paperclip-architect` | opus | 30 | design tasks, architecture, decomposition |
+| 💻 Developer | `paperclip-developer` | sonnet | 25 | feature, bug, refactor, docs |
+| 🔍 Reviewer | `paperclip-reviewer` | sonnet | 20 | review, security audit, in_review tasks |
+| 🧪 Tester | `paperclip-tester` | sonnet | 20 | test creation, bug reporting |
+| ⚙️ Operator | `paperclip-operator` | sonnet | 15 | deploy, monitor, automation |
+| 🎨 Design | `paperclip-design-fetcher` | haiku | 10 | fetch DESIGN.md for brand specs |
+
+Sub-agents are defined in `agents/*.md`. Each has independent context, model selection, and tool permissions. The Developer cannot create Cron jobs; the Architect uses opus for deeper reasoning.
+
+## Three Automation Hooks
+
+| Hook | Event | Behavior |
+|------|-------|----------|
+| Dashboard | `SessionStart` | Auto-displays company status when `.paperclip/` exists |
+| Audit | `PostToolUse` | Auto-appends to `audits.jsonl` on task status changes |
+| Heartbeat | `SubagentStop` | Auto-updates `last_heartbeat` when a paperclip sub-agent finishes |
+
+Hooks are defined in `hooks/hooks.json`. They eliminate manual bookkeeping — no more manually typing audit entries or updating timestamps after every task.
+
 ## Core Concepts
 
-| PaperClip Concept | Claude Code Tool |
-|-------------------|-----------------|
+| PaperClip Concept | Claude Code Implementation |
+|-------------------|---------------------------|
 | Company | YAML config + file-based state |
-| Org Chart | Agent role prompts |
-| Agent | Agent tool (subagent) |
-| Heartbeat | CronCreate |
-| Task/Issue | TaskCreate / TaskUpdate |
+| Org Chart | `agents.yaml` role definitions |
+| Agent (v2.0) | Native sub-agent (`agents/*.md`) with independent context |
+| Agent (v1.0) | Claude role-playing via prompt (legacy fallback) |
+| Heartbeat | CronCreate scheduled prompts |
+| Task/Issue | `.paperclip/tasks/*.json` files |
 | Checkout | File-based atomic write |
-| Budget | budget.total/spent/remaining |
-| Board | AskUserQuestion |
+| Budget | `budget.json` tracking |
+| Board | AskUserQuestion for approvals |
+| Hooks (v2.0) | Auto-audit, auto-heartbeat, session dashboard |
 
 ## Runtime State Structure
 
 ```
 my-project/
 ├── company.yaml           # Company config (user-editable)
-├── agents.yaml            # Agent role definitions (user-editable)
+├── agents.yaml            # Agent role definitions — data source for sub-agents
 ├── rules.yaml             # Governance rules (user-editable)
 └── .paperclip/            # Runtime state (auto-managed, no database)
-    ├── company.json       # Company info + schema_version
+    ├── company.json       # Company info + schema_version + heartbeat IDs
     ├── budget.json        # Budget tracking
-    ├── audits.jsonl       # Append-only audit log
+    ├── audits.jsonl       # Append-only audit log (auto-managed by hooks)
     ├── agents/            # One JSON file per agent (no write conflicts)
     │   ├── architect.json
     │   ├── developer.json
@@ -82,24 +125,29 @@ my-project/
     ├── tasks/             # One JSON file per task
     │   ├── task_001.json
     │   └── task_002.json
-    └── design/            # DESIGN.md cache (optional, Layer 4)
+    └── design/            # DESIGN.md cache (optional, v2.0: fetched by design-fetcher agent)
 ```
 
-## Unified CLI
+## Plugin Structure (v2.0)
 
-All commands via `python scripts/paperclip.py`:
-
-| Command | Action |
-|---------|--------|
-| `init <name> [--budget N] [--design brand]` | Create new company |
-| `start <name>` | Generate CronCreate prompts for all agents |
-| `status <name>` | Show company dashboard |
-| `task <name> "<title>" [--type T] [--priority P]` | Create and auto-dispatch task |
-| `budget <name> [--format json|summary]` | Show cost report |
-| `heartbeat <name> --agent <id>` | Run single agent heartbeat |
-| `pause <name>` | Generate CronDelete prompts |
-| `resume <name>` | Re-generate CronCreate prompts |
-| `setup [name] [--pro] [--budget N]` | One-command full setup |
+```
+paperclip-orchestrator/
+├── .claude-plugin/plugin.json   # v2.0.0 — registers skills, agents, hooks
+├── SKILL.md                     # This file
+├── README.md                    # Full documentation
+├── agents/                      # 🆕 6 native sub-agents
+│   ├── architect.md
+│   ├── developer.md
+│   ├── reviewer.md
+│   ├── tester.md
+│   ├── operator.md
+│   └── design-fetcher.md
+├── hooks/                       # 🆕 Automation hooks
+│   └── hooks.json
+├── assets/company_template/     # Templates for company init
+├── scripts/                     # Python CLI helpers
+└── references/                  # Detailed reference docs
+```
 
 ## Workflow
 
@@ -115,6 +163,7 @@ See `references/company-structure.md` for full configuration reference.
 ### 2. Define Agent Roles
 
 Agent roles defined in `agents.yaml`. Five default roles: architect, developer, reviewer, operator, tester.
+The `agents.yaml` file is the **data source** for the native sub-agents — each sub-agent reads its own role definition at startup.
 See `references/agent-roles.md` for the complete role library.
 
 ### 3. Schedule Heartbeats
@@ -123,9 +172,9 @@ See `references/agent-roles.md` for the complete role library.
 python scripts/paperclip.py start my-project
 ```
 
-Outputs CronCreate specifications. Claude Code registers each agent's heartbeat.
+Registers CronCreate jobs. At each heartbeat, Claude invokes the corresponding `paperclip-*` sub-agent.
 
-Protocol: Wake → Check inbox → Auto-checkout task → Generate execution prompt → Execute → Report
+Protocol: CronCreate fires → Claude invokes sub-agent → Sub-agent reads state → Executes → Reports → Hook updates timestamps
 See `references/heartbeat-system.md` for scheduling patterns.
 
 ### 4. Manage Tasks
@@ -156,7 +205,9 @@ See `references/budget-governance.md` for governance rules.
 
 ### 6. Multi-Agent Workflows
 
-Pipeline, Parallel Review, Master-Worker, Competitive patterns via Workflow tool.
+With native sub-agents in v2.0, use Workflow.pipeline or Workflow.parallel for concurrent agent execution:
+- Architect designs → Developer implements → Reviewer verifies (pipeline)
+- Developer + Tester run in parallel on independent tasks
 See `references/workflow-patterns.md` for detailed patterns.
 
 ## Pro Mode (4-Layer Integration)
@@ -176,7 +227,7 @@ PaperClip Pro integrates four skill layers for production-grade agent teams:
 # One-command full setup with external skills
 python scripts/paperclip.py setup my-project --pro --budget 500000
 
-# Init with a design brand
+# Init with a design brand — v2.0: design-fetcher agent auto-fetches DESIGN.md
 python scripts/paperclip.py init my-app --design vercel
 
 # Browse and select a brand
