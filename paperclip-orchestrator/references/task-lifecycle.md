@@ -37,21 +37,20 @@ TaskCreate:
     parent_milestone: "核心功能开发"
 ```
 
-## Task Dispatch
+## Task Dispatch (v2.2)
 
-Auto-dispatch unassigned tasks:
-```bash
-# Via unified CLI (create + auto-dispatch)
-python scripts/paperclip.py task my-project "Implement JWT login" --type feature
+Task creation and dispatch happens in Claude Code dialogue:
 
-# Or dispatch existing unassigned tasks
-python scripts/task_dispatcher.py --company-dir ./my-project
+```
+"创建任务 'Implement JWT login' --type feature"
 ```
 
+Claude writes a new `.paperclip/tasks/task_NNN.json` and auto-assigns based on capability matching from each agent's `paperclip:` frontmatter.
+
 Dispatch rules:
-1. Match task tags to agent capabilities
-2. Consider agent workload (fewer tasks = higher priority)
-3. Check budget availability for that agent
+1. Match task tags to agent capabilities (from agent.md paperclip: frontmatter)
+2. Apply type-based bonus (design→architect +10, feature→developer +8, etc.)
+3. Consider agent workload (fewer tasks = higher priority)
 4. Assign to highest-scoring available agent
 
 ## Task Checkout (Atomic)

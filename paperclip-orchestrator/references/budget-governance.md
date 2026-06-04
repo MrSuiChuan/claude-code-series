@@ -10,12 +10,10 @@ PaperClip tracks token consumption at multiple levels:
 
 ### Cost Report
 
-```bash
-# Via unified CLI
-python scripts/paperclip.py budget my-project
+Budget tracking is built into the `.paperclip/budget.json` file. View via:
 
-# Or directly
-python scripts/cost_reporter.py --company-dir ./my-project --format summary
+```
+/paperclip-status   → dashboard includes budget summary
 ```
 
 Output:

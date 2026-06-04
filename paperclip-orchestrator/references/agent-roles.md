@@ -44,26 +44,34 @@
 
 ## Custom Roles
 
-Add to `agents.yaml`:
+Create a new `agents/data-engineer.md` with `paperclip:` frontmatter:
 
-```yaml
-roles:
-  data_engineer:
-    display_name: "数据工程师"
-    level: "execution"
-    reports_to: "architect"
-    capabilities:
-      - data_pipeline
-      - sql_optimization
-      - etl_development
-    budget_share: 0.15
-    max_autonomous_tokens: 50000
-    agent_prompt: |
-      你是数据工程师。职责：
-      1. 设计和维护数据管道
-      2. 优化 SQL 查询
-      3. 开发 ETL 流程
+```markdown
+---
+name: paperclip-data-engineer
+description: PaperClip 数据工程师。ETL、数据管道、SQL 优化。
+model: sonnet
+maxTurns: 20
+paperclip:
+  role: data_engineer
+  display_name: 数据工程师
+  level: execution
+  reports_to: architect
+  capabilities:
+    - data_pipeline
+    - sql_optimization
+    - etl_development
+  budget_share: 0.15
+  max_autonomous_tokens: 50000
+---
+
+你是数据工程师。职责：
+1. 设计和维护数据管道
+2. 优化 SQL 查询
+3. 开发 ETL 流程
 ```
+
+Then register it in `.claude-plugin/plugin.json` `agents` array.
 
 ## Capability Taxonomy
 
@@ -83,15 +91,19 @@ roles:
 | monitoring | System health monitoring | operator |
 | incident_response | Responding to alerts | operator |
 
-## Agent Mapping to Claude Code
+## Agent Mapping to Claude Code (v2.2)
 
-Each PaperClip agent maps to a Claude Code subagent:
+Each PaperClip role maps to a Claude Code sub-agent defined in `agents/*.md`:
 
 ```
-PaperClip Agent → Agent tool call:
-  agent_type: "general-purpose"
-  prompt: <role_prompt from agents.yaml>
-  model: sonnet (default, can override per role)
+paperclip-architect   → agents/architect.md   (opus,  leadership, 30 turns)
+paperclip-developer   → agents/developer.md   (sonnet, execution,  25 turns)
+paperclip-reviewer    → agents/reviewer.md    (sonnet, quality,    20 turns)
+paperclip-tester      → agents/tester.md      (sonnet, quality,    20 turns)
+paperclip-operator    → agents/operator.md    (sonnet, execution,  15 turns)
+paperclip-design-fetcher → agents/design-fetcher.md (haiku, execution, 10 turns)
 ```
+
+Role definitions (capabilities, budget, level) are in each agent's `paperclip:` frontmatter.
 
 For parallel execution, use Workflow.pipeline or Workflow.parallel with multiple agents.

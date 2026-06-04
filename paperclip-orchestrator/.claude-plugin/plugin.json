@@ -20,7 +20,6 @@
     "./agents/design-fetcher.md"
   ],
   "hooks": "./hooks/hooks.json",
-  "monitors": "./monitors/monitors.json",
   "userConfig": {
     "company_name": {
       "type": "string",
