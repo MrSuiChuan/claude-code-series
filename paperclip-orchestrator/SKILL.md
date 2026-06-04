@@ -38,7 +38,7 @@ All operations happen in Claude Code conversation. Use natural language or slash
 | Dashboard | `/paperclip-status` |
 | Create task | "创建任务 '标题' --type feature" |
 | Execute | "开始" — Claude invokes the matching sub-agent |
-| Budget | `python scripts/cost_reporter.py --company-dir ./my-project` |
+| Budget | `/paperclip-status --company-dir ./my-project` |
 
 ### Mode B: Terminal CLI
 
@@ -47,10 +47,10 @@ All operations happen in Claude Code conversation. Use natural language or slash
 ./bin/paperclip-init my-project --budget 500000
 
 # Budget report
-python scripts/cost_reporter.py --company-dir ./my-project
+/paperclip-status --company-dir ./my-project
 
 # Fetch design brand
-python scripts/design_fetcher.py fetch vercel --output ./my-project
+（design-fetcher agent 自动获取）
 ```
 
 No `pip install` required. Zero Python dependencies (PyYAML removed in v2.1).
@@ -63,7 +63,7 @@ No `pip install` required. Zero Python dependencies (PyYAML removed in v2.1).
 | `start <name>` | Register CronCreate jobs (one per agent), record IDs in company.json |
 | `status <name>` | Read .paperclip/agents/*.json + tasks/*.json, summarize |
 | `task <name> "<title>" [--type T]` | Write task_NNN.json with auto-dispatch |
-| `budget <name>` | `python scripts/cost_reporter.py --company-dir ./<name>` |
+| `budget <name>` | `/paperclip-status --company-dir ./<name>` |
 | `heartbeat <name> --agent <id>` | Invoke paperclip-<role> sub-agent via Agent tool |
 | `pause <name>` | CronDelete all heartbeat job IDs |
 | `resume <name>` | Same as start (re-register CronCreate) |
@@ -195,7 +195,7 @@ See `references/task-lifecycle.md` for complete lifecycle.
 ### 5. Track Budget
 
 ```bash
-python scripts/cost_reporter.py --company-dir ./my-project --format summary
+/paperclip-status --company-dir ./my-project --format summary
 ```
 
 Enforces per-task caps, daily limits, auto-throttling at 80%.
@@ -224,11 +224,11 @@ PaperClip Pro integrates four skill layers for production-grade agent teams:
 ```bash
 # Init with a design brand — v2.2: design-fetcher agent auto-fetches DESIGN.md
 ./bin/paperclip-init my-app --budget 500000
-python scripts/design_fetcher.py fetch vercel --output ./my-app
+（design-fetcher agent 自动获取）
 
 # Browse and select a brand
-python scripts/design_fetcher.py search "dark saas"
-python scripts/design_fetcher.py fetch vercel --output ./my-project
+（design-fetcher agent 自动获取）
+（design-fetcher agent 自动获取）
 ```
 
 ### Role → Skill Mapping
