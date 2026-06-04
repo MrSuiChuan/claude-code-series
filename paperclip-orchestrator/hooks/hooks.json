@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "如果当前工作目录下存在 .paperclip/ 目录，读取 company.json 获取公司名，扫描 agents/*.json 统计各 agent 状态和完成数，扫描 tasks/*.json 统计各状态任务数量（todo/in_progress/in_review/done）。以简洁的表格形式展示公司仪表盘。不执行任何任务。"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "检查刚才的文件操作：1）如果修改了 .paperclip/tasks/ 下任何文件的 status 字段（从 todo 到 in_progress，或从 in_progress 到 in_review，或从 in_review 到 done），自动在 .paperclip/audits.jsonl 追加一条 status_change 记录，格式为 {\"timestamp\":\"<ISO时间>\",\"event\":\"status_change\",\"detail\":\"task_id: old_status → new_status\"}；2）如果修改了 .paperclip/agents/ 下任何文件，检查 status 是否从 working 变为 idle（任务完成），如果是，在 audits.jsonl 追加 task_completed 记录。以上检查只在 .paperclip/ 目录下的文件被修改时触发，其他文件忽略。"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "如果刚结束的子代理名称以 'paperclip-' 开头，提取角色名（如 paperclip-architect → architect），读取对应的 .paperclip/agents/<role>.json，将 last_heartbeat 更新为当前 ISO 时间。注意：只更新时间戳，不改变其他字段。如果 .paperclip/ 目录不存在则跳过。"
+          }
+        ]
+      }
+    ]
+  }
+}

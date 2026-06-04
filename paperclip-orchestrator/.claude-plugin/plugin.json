@@ -1,12 +1,21 @@
 {
   "name": "paperclip-orchestrator",
-  "version": "1.0.0",
-  "description": "PaperClip Pro - AI agent orchestration platform. Manage multi-agent companies with org charts, heartbeat scheduling, task queues, budget tracking, and governance.",
+  "version": "2.0.0",
+  "description": "PaperClip Pro — AI agent orchestration platform. Run 6 specialized sub-agents (architect, developer, reviewer, tester, operator, design-fetcher) as a structured company with org charts, heartbeat scheduling, task queues, and budget governance. All state in JSON files, zero database.",
   "author": {
     "name": "MrSuiChuan"
   },
   "homepage": "https://github.com/MrSuiChuan/claude-code-series/tree/main/paperclip-orchestrator",
   "category": "orchestration",
-  "tags": ["agent-orchestration", "multi-agent", "task-management"],
-  "license": "MIT"
+  "tags": ["agent-orchestration", "multi-agent", "task-management", "team"],
+  "license": "MIT",
+  "skills": ["./SKILL.md"],
+  "agents": [
+    "./agents/architect.md",
+    "./agents/developer.md",
+    "./agents/reviewer.md",
+    "./agents/tester.md",
+    "./agents/operator.md",
+    "./agents/design-fetcher.md"
+  ]
 }
