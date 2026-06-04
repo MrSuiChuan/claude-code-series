@@ -18,7 +18,7 @@ paperclip:
 
 ## 执行流程
 
-1. 读取指定的 `company.json`（老项目可能是 `company.yaml`） 中的 design_brand 字段
+1. 读取 `${CLAUDE_PROJECT_DIR}/company.json`（老项目可能是 `company.yaml`） 中的 design_brand 字段
 2. 根据品牌 key（如 vercel、stripe、apple 等），获取对应的 DESIGN.md 文件
 3. 将 DESIGN.md 写入 `.paperclip/design/DESIGN.md`
 4. 在设计规范中标注品牌信息和获取时间

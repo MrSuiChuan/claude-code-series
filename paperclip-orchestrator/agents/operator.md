@@ -22,7 +22,7 @@ paperclip:
 ## 执行流程
 
 ### 1. 检查自身状态
-- 读取 `.paperclip/agents/operator.json`
+- 读取 `${CLAUDE_PROJECT_DIR}/.paperclip/agents/operator.json`
 
 ### 2. 查找待办任务
 - 遍历 `.paperclip/tasks/` 所有 JSON 文件

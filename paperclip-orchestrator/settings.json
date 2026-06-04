@@ -1,0 +1,6 @@
+{
+  "subagentStatusLine": {
+    "type": "paperclip",
+    "show": true
+  }
+}

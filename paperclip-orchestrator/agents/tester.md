@@ -22,7 +22,7 @@ paperclip:
 ## 执行流程
 
 ### 1. 检查自身状态
-- 读取 `.paperclip/agents/tester.json`
+- 读取 `${CLAUDE_PROJECT_DIR}/.paperclip/agents/tester.json`
 
 ### 2. 查找待测试任务
 - 遍历 `.paperclip/tasks/` 所有 JSON 文件

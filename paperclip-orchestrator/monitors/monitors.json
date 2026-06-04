@@ -1,0 +1,8 @@
+[
+  {
+    "name": "paperclip-stale-tasks",
+    "command": "echo \"checking\"",
+    "description": "PaperClip stale task detection — fires when paperclip-orchestrator skill is invoked",
+    "when": "on-skill-invoke:paperclip-orchestrator"
+  }
+]

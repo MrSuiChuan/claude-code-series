@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+"""PaperClip CLI — quick init from terminal."""
+import sys, json, os
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).parent.parent
+TEMPLATE = SCRIPT_DIR / "assets" / "company_template" / "company.json"
+
+def init_company(name: str, budget: int = 500000):
+    company_dir = Path.cwd() / name
+    pp_dir = company_dir / ".paperclip"
+
+    # Load template
+    data = json.loads(TEMPLATE.read_text(encoding="utf-8"))
+    data["company"]["name"] = name
+    data["company"]["display_name"] = name
+    data["budget"]["daily_limit"] = budget
+
+    # Write company.json
+    company_dir.mkdir(parents=True, exist_ok=True)
+    with open(company_dir / "company.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+    # Create .paperclip/ structure
+    for sub in ["agents", "tasks", "design"]:
+        (pp_dir / sub).mkdir(parents=True, exist_ok=True)
+
+    # Budget tracking
+    json.dump({"total_allocated": budget, "spent": 0},
+              open(pp_dir / "budget.json", "w"), indent=2)
+
+    # Agent state files
+    roles = {
+        "architect": ("架构师", 0.25, 80000),
+        "developer": ("开发者", 0.40, 50000),
+        "reviewer": ("代码审查者", 0.20, 40000),
+        "operator": ("运维者", 0.10, 30000),
+        "tester": ("测试者", 0.05, 30000),
+    }
+    for role_id, (display, share, tokens) in roles.items():
+        json.dump({
+            "role": role_id, "display_name": display, "status": "idle",
+            "tokens_spent": 0, "tasks_completed": 0, "current_task": None,
+            "budget_share": share, "max_autonomous_tokens": tokens,
+            "last_heartbeat": None
+        }, open(pp_dir / "agents" / f"{role_id}.json", "w"), indent=2)
+
+    # Company runtime info
+    json.dump({
+        "schema_version": 1, "company": name, "heartbeats": {}
+    }, open(pp_dir / "company.json", "w"), indent=2)
+
+    # Audit log
+    (pp_dir / "audits.jsonl").touch()
+
+    print(f"[OK] PaperClip company '{name}' created (budget: {budget:,}/day)")
+    print(f"     Location: {company_dir}")
+    print(f"     Next: start heartbeats — tell Claude '启动心跳'")
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: paperclip-init <name> [--budget N]")
+        sys.exit(1)
+    name = sys.argv[1]
+    budget = 500000
+    if len(sys.argv) >= 4 and sys.argv[2] == "--budget":
+        budget = int(sys.argv[3])
+    init_company(name, budget)

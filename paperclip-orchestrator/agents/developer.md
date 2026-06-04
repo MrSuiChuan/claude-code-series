@@ -23,7 +23,7 @@ paperclip:
 ## 执行流程
 
 ### 1. 检查自身状态
-- 读取 `.paperclip/agents/developer.json`
+- 读取 `${CLAUDE_PROJECT_DIR}/.paperclip/agents/developer.json`
 - 如果 status 为 working（上次未完成），优先继续之前的任务
 
 ### 2. 查找待办任务

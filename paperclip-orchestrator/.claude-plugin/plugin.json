@@ -1,13 +1,15 @@
 {
   "name": "paperclip-orchestrator",
-  "version": "2.0.0",
-  "description": "PaperClip Pro — AI agent orchestration platform. Run 6 specialized sub-agents (architect, developer, reviewer, tester, operator, design-fetcher) as a structured company with org charts, heartbeat scheduling, task queues, and budget governance. All state in JSON files, zero database.",
+  "version": "2.2.0",
+  "displayName": "PaperClip Orchestrator",
+  "description": "PaperClip Pro — AI agent orchestration platform. Run 6 specialized sub-agents as a structured company with org charts, heartbeat scheduling, task queues, and budget governance. All state in JSON files, zero database.",
   "author": {
     "name": "MrSuiChuan"
   },
   "homepage": "https://github.com/MrSuiChuan/claude-code-series/tree/main/paperclip-orchestrator",
+  "repository": "https://github.com/MrSuiChuan/claude-code-series",
   "category": "orchestration",
-  "tags": ["agent-orchestration", "multi-agent", "task-management", "team"],
+  "keywords": ["agent-orchestration", "multi-agent", "task-management", "team", "heartbeat", "paperclip"],
   "license": "MIT",
   "agents": [
     "./agents/architect.md",
@@ -16,5 +18,23 @@
     "./agents/tester.md",
     "./agents/operator.md",
     "./agents/design-fetcher.md"
-  ]
+  ],
+  "hooks": "./hooks/hooks.json",
+  "monitors": "./monitors/monitors.json",
+  "userConfig": {
+    "company_name": {
+      "type": "string",
+      "title": "公司名称",
+      "description": "新 PaperClip 公司的目录名（kebab-case，如 my-project）",
+      "default": "my-project"
+    },
+    "daily_budget": {
+      "type": "number",
+      "title": "每日预算 (tokens)",
+      "description": "所有 Agent 每日 token 消耗上限",
+      "default": 500000,
+      "min": 10000,
+      "max": 10000000
+    }
+  }
 }
