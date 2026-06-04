@@ -67,6 +67,7 @@ PaperClip v2.0 从"YAML 配置 + 角色扮演"升级为**真正利用 Claude Cod
 ```
 v1.0:  agents.yaml → Claude 读配置 → 临时扮演角色 → 手动收尾
 v2.0:  agents.yaml + agents/*.md → Claude 调用子代理 → hooks 自动收尾
+v2.1:  agents/*.md paperclip: → 角色定义唯一来源，agents.yaml 不再生成
 ```
 
 ### 你可能不需要的
@@ -130,7 +131,6 @@ python scripts/paperclip.py init my-project --budget 500000
 ```
 my-project/
 ├── company.yaml       # 公司配置（可编辑）
-├── agents.yaml        # 5 个角色定义（可编辑）
 ├── rules.yaml         # 治理规则（可编辑）
 └── .paperclip/        # 运行时状态（自动管理）
     ├── company.json
@@ -165,7 +165,7 @@ Agent 会在心跳时自动签出任务。你也可以手动触发：
 | PaperClip 概念 | 实际机制 | 说明 |
 |---------------|---------|------|
 | **Company** | 一个目录 + YAML 配置 | 项目的组织容器 |
-| **Org Chart** | `agents.yaml` 中的角色定义 | 5 个预设角色，可自定义 |
+| **Org Chart** (v2.1) | `agents/*.md` `paperclip:` frontmatter | 每个子代理自带角色定义 |
 | **Agent** | Claude 扮演的 AI 角色 | 按角色 prompt 执行任务 |
 | **Heartbeat** | CronCreate 定时任务 | 每 15 分钟自动唤醒 |
 | **Task** | `.paperclip/tasks/*.json` | 自动分派 + 状态追踪 |
@@ -250,15 +250,14 @@ PaperClip v2.0 提供了 6 个原生 Claude Code 子代理。输入 `/agents` �
 | `paperclip-operator` | sonnet | 15 | deploy 任务、监控运维 |
 | `paperclip-design-fetcher` | haiku | 10 | 初始化时获取品牌 DESIGN.md |
 
-### 子代理 vs agents.yaml
+### 子代理 vs agents.yaml（v2.1 已废弃）
 
 ```
-agents.yaml           → 角色定义的"数据源"（能力标签、预算、prompt）
-agents/*.md           → 执行层（独立上下文、模型选择、工具权限）
+agents/*.md paperclip:   → 角色定义的唯一来源（能力标签、预算、prompt）
 .paperclip/agents/*.json → 运行时状态（status、current_task、heartbeat）
 ```
 
-三者各司其职。`agents.yaml` 可以手动编辑来调整角色能力，`agents/*.md` 控制子代理的执行行为，`.paperclip/agents/*.json` 追踪运行状态。
+v2.1 将 `agents.yaml` 中的角色信息内聚到各 agent.md 的 `paperclip:` frontmatter。新公司不再生成 `agents.yaml`，老公司的文件仍可使用。
 
 ### 自动化钩子
 
@@ -282,7 +281,7 @@ v2.0 的 3 个钩子消除了手动簿记工作：
 
 ```
 用户: init my-project --budget 500000
-      → 创建 company.yaml + agents.yaml + rules.yaml + .paperclip/
+      → 创建 company.yaml + rules.yaml + .paperclip/
 
 用户: 启动心跳
       → 注册 5 个 CronCreate（每 15 分钟）
@@ -390,26 +389,29 @@ Agent 绩效:
 
 ### 修改角色
 
-编辑 `agents.yaml` 即可自定义：
+编辑 `agents/<role>.md` 的 `paperclip:` frontmatter 即可自定义：
 
 ```yaml
-roles:
-  # 添加新角色
-  data_engineer:
-    display_name: "数据工程师"
-    level: "execution"
-    reports_to: "architect"
-    capabilities:
-      - data_pipeline
-      - sql_optimization
-      - etl_development
-    budget_share: 0.15
-    max_autonomous_tokens: 50000
-    agent_prompt: |
-      你是数据工程师。职责：
-      1. 设计和维护数据管道
-      2. 优化 SQL 查询
-      3. 开发 ETL 流程
+# agents/data-engineer.md
+---
+name: paperclip-data-engineer
+description: PaperClip 数据工程师。ETL 开发、数据管道维护、SQL 优化。
+model: sonnet
+maxTurns: 20
+paperclip:
+  role: data_engineer
+  display_name: 数据工程师
+  level: execution
+  reports_to: architect
+  capabilities:
+    - data_pipeline
+    - sql_optimization
+    - etl_development
+  budget_share: 0.15
+  max_autonomous_tokens: 50000
+---
+
+你是 PaperClip 公司的数据工程师...
 ```
 
 ### 能力标签
@@ -536,9 +538,6 @@ my-project/                        # ← 你的项目（一个"公司"）
 │   ├── governance                 #   审批规则
 │   └── milestones                 #   里程碑
 │
-├── agents.yaml                    # 角色定义（可编辑）
-│   └── roles.<name>               #   每个角色的 prompt + 能力
-│
 ├── rules.yaml                     # 治理规则（可编辑）
 │   ├── budget_enforcement         #   预算执行
 │   ├── approval_workflows         #   审批流
@@ -587,21 +586,21 @@ A: 不会。每个 Agent 只写自己的 `<role>.json` 文件，任务文件通�
 
 A: Agent 唤醒后如果没有任务，只读一个 JSON 文件就退出（< 100 tokens）。有任务时才消耗预算。建议设置合理的 `daily_limit`。
 
-### Q: agents.yaml 和 agents/ 目录有什么区别？
+### Q: v2.1 中角色定义在哪里？
 
-A: `agents.yaml` 是**数据源**——定义角色名称、能力标签、预算配比和 prompt。`agents/` 目录是 v2.0 新增的**执行层**——每个 `.md` 文件是一个真正的 Claude Code 子代理，有独立的上下文窗口、模型选择和工具权限。子代理启动时会读取 `agents.yaml` 获取自己的角色定义。两者配合使用，不是替代关系。
+A: 全部在 `agents/*.md` 的 `paperclip:` frontmatter 中。每个子代理自带角色定义（名称、能力标签、预算配比、级别），不再需要单独的 `agents.yaml`。老项目已有的 `agents.yaml` 仍然可用不作修改。
 
 ### Q: 如何查看和调用子代理？
 
 A: 输入 `/agents` 查看全部 6 个 paperclip 子代理。Claude 会根据任务上下文自动调用，你也可以手动指定——比如"让 paperclip-reviewer 审查 task_007"。
 
-### Q: v2.0 的 hooks 会自动处理什么？
+### Q: hooks 会自动处理什么？
 
-A: 三个钩子完全自动化了原本手动的簿记工作——`SessionStart` 自动展示仪表盘，`PostToolUse` 自动追加审计日志，`SubagentStop` 自动更新心跳时间戳。你再也不用在每个任务完成后手动写 `audits.jsonl` 了。
+A: 三个钩子完全自动化了原本手动的簿记工作——`SessionStart` 自动展示仪表盘，`PostToolUse` 自动追加审计日志，`SubagentStop` 自动更新心跳时间戳。
 
 ### Q: 如何添加自定义角色？
 
-A: 1) 编辑 `agents.yaml`，在 `roles:` 下添加新角色；2) 在 `agents/` 下创建对应的 `.md` 子代理文件；3) 创建对应的 `.paperclip/agents/<role>.json` 状态文件。
+A: 1) 在 `agents/` 下创建 `.md` 子代理文件，添加 `paperclip:` frontmatter；2) 在 `plugin.json` 的 `agents` 数组中注册；3) 创建对应的 `.paperclip/agents/<role>.json` 状态文件。
 
 ### Q: 如何迁移/备份？
 

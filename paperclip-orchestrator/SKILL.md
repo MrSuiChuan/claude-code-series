@@ -95,9 +95,8 @@ Hooks are defined in `hooks/hooks.json`. They eliminate manual bookkeeping — n
 | PaperClip Concept | Claude Code Implementation |
 |-------------------|---------------------------|
 | Company | YAML config + file-based state |
-| Org Chart | `agents.yaml` role definitions |
-| Agent (v2.0) | Native sub-agent (`agents/*.md`) with independent context |
-| Agent (v1.0) | Claude role-playing via prompt (legacy fallback) |
+| Org Chart (v2.1) | `agents/*.md` `paperclip:` frontmatter — one source of truth |
+| Agent | Native sub-agent with independent context, model, and permissions |
 | Heartbeat | CronCreate scheduled prompts |
 | Task/Issue | `.paperclip/tasks/*.json` files |
 | Checkout | File-based atomic write |
@@ -110,7 +109,6 @@ Hooks are defined in `hooks/hooks.json`. They eliminate manual bookkeeping — n
 ```
 my-project/
 ├── company.yaml           # Company config (user-editable)
-├── agents.yaml            # Agent role definitions — data source for sub-agents
 ├── rules.yaml             # Governance rules (user-editable)
 └── .paperclip/            # Runtime state (auto-managed, no database)
     ├── company.json       # Company info + schema_version + heartbeat IDs
@@ -125,7 +123,7 @@ my-project/
     ├── tasks/             # One JSON file per task
     │   ├── task_001.json
     │   └── task_002.json
-    └── design/            # DESIGN.md cache (optional, v2.0: fetched by design-fetcher agent)
+    └── design/            # DESIGN.md cache (optional, fetched by design-fetcher agent)
 ```
 
 ## Plugin Structure (v2.0)
@@ -162,9 +160,9 @@ See `references/company-structure.md` for full configuration reference.
 
 ### 2. Define Agent Roles
 
-Agent roles defined in `agents.yaml`. Five default roles: architect, developer, reviewer, operator, tester.
-The `agents.yaml` file is the **data source** for the native sub-agents — each sub-agent reads its own role definition at startup.
-See `references/agent-roles.md` for the complete role library.
+Agent roles defined in each `agents/*.md` file under the `paperclip:` frontmatter. Six default roles: architect (opus), developer, reviewer, tester, operator (sonnet), design-fetcher (haiku). Each sub-agent carries its own capabilities, budget share, and role definition.
+
+The legacy `agents.yaml` is no longer generated for new companies, but existing companies with the file continue to work.
 
 ### 3. Schedule Heartbeats
 
