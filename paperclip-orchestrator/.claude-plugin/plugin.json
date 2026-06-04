@@ -9,7 +9,6 @@
   "category": "orchestration",
   "tags": ["agent-orchestration", "multi-agent", "task-management", "team"],
   "license": "MIT",
-  "skills": ["./SKILL.md"],
   "agents": [
     "./agents/architect.md",
     "./agents/developer.md",
